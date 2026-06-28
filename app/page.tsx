@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import KpiCards from "@/components/KpiCards";
 import PreviewTable from "@/components/PreviewTable";
+import TrendCharts from "@/components/TrendCharts";
+import { buildTrendChartData } from "@/lib/charts";
 import { getSheetRows, type Row } from "@/lib/excel";
 import { calculateKpis } from "@/lib/kpi";
 
@@ -60,6 +62,7 @@ export default function Home() {
 
   const previewRows = sheetRows.slice(0, 10);
   const kpis = calculateKpis(sheetRows);
+  const trendChartData = buildTrendChartData(sheetRows);
 
   return (
     <div className="flex min-h-full flex-1 flex-col items-center bg-[#f5f5f7] px-6 py-16 font-sans">
@@ -142,6 +145,8 @@ export default function Home() {
         )}
 
         {selectedSheet && <KpiCards metrics={kpis} />}
+
+        {selectedSheet && <TrendCharts chartData={trendChartData} />}
 
         <PreviewTable rows={previewRows} />
       </main>
