@@ -13,7 +13,7 @@ type SheetTypeBadgeProps = {
         className: "border-indigo-200 bg-indigo-50 text-indigo-700",
       },
       unknown: {
-        label: "Preview Only",
+        label: "数据预览",
         className: "border-zinc-200 bg-zinc-50 text-zinc-600",
       },
     };
@@ -24,7 +24,7 @@ type SheetTypeBadgeProps = {
       <span
         className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${config.className}`}
       >
-        Sheet Type: {config.label}
+        工作表类型: {config.label}
       </span>
     );
   }

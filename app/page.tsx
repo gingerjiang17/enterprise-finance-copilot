@@ -121,8 +121,7 @@ export default function Home() {
         </p>
 
         <p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
-          A finance portfolio project built with Next.js and AI-assisted coding
-          to automate Excel-based KPI, variance, trend, and GL analysis.
+        基于 Excel 财务数据，自动生成 KPI 汇总、预算与实际对比、趋势图、业务单元 / 区域分析及总账实际数摘要。
         </p>
 
         <div className="mt-16 flex flex-col items-center gap-3 sm:flex-row">
@@ -150,7 +149,7 @@ export default function Home() {
                   d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
                 />
               </svg>
-              Upload Excel
+              上传Excel
             </span>
           </label>
 
@@ -175,16 +174,16 @@ export default function Home() {
                 d="M3 13.125C3 12.504 3.504 12 4.125 12h3.75C8.496 12 9 12.504 9 13.125v6.75C9 20.496 8.496 21 7.875 21h-3.75A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-3.75a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125C16.5 3.504 17.004 3 17.625 3h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
               />
             </svg>
-            {isLoadingSample ? "Loading..." : "Try Sample Dataset"}
+            {isLoadingSample ? "加载中..." : "示例数据"}
           </button>
         </div>
 
         {fileName ? (
           <p className="mt-6 text-sm font-medium text-zinc-600">
-            Selected file: {fileName}
+          当前文件：{fileName}
           </p>
         ) : (
-          <p className="mt-6 text-sm text-zinc-400">.xlsx, .xls, or .csv</p>
+          <p className="mt-6 text-sm text-zinc-400">.xlsx, .xls, 或.csv</p>
         )}
 
         {sheetNames.length > 0 && selectedSheet && (
