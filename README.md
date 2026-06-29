@@ -1,5 +1,7 @@
 # Enterprise Finance Copilot
 
+Live Demo: https://enterprise-finance-copilot.vercel.app/
+
 A modern enterprise finance dashboard built with **Next.js**, **React**, **TypeScript**, **Tailwind CSS**, **Recharts**, and **xlsx**.
 
 This is an **AI-assisted learning and portfolio project** created to practice frontend development, financial data processing, and enterprise-style finance analysis workflows.
