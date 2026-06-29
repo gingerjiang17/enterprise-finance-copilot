@@ -1,48 +1,91 @@
 "use client";
 
+import { calculateBudgetVsActual } from "@/lib/budget";
+import type { Row } from "@/lib/excel";
+
 type Props = {
-  data: any[];
+  data: Row[];
 };
 
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function formatPercent(value: number | null) {
+  if (value === null) return "--";
+  return `${value.toFixed(1)}%`;
+}
+
 export default function BudgetVsActual({ data }: Props) {
-  // 模拟 Budget（因为 Excel 可能没有）
-  const budget = 100000000;
+  const metrics = calculateBudgetVsActual(data);
 
-  // 从数据里算 Actual
-  const actual = data.reduce((sum, row) => {
-    return sum + (Number(row.Revenue) || 0);
-  }, 0);
-
-  const variance = actual - budget;
-  const variancePct = budget ? (variance / budget) * 100 : 0;
+  const isPositive = metrics.variance >= 0;
 
   return (
-    <div className="bg-white rounded-2xl shadow p-6 mt-6">
-      <h2 className="text-lg font-semibold mb-4">
-        Budget vs Actual (Revenue)
-      </h2>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <p className="text-gray-500">Budget</p>
-          <p className="text-xl font-bold">
-            {budget.toLocaleString()}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-gray-500">Actual</p>
-          <p className="text-xl font-bold">
-            {actual.toLocaleString()}
-          </p>
-        </div>
-
-        <div>
-          <p className={variance >= 0 ? "text-green-600" : "text-red-600"}>
-            Variance {variance.toLocaleString()} ({variancePct.toFixed(1)}%)
-          </p>
-        </div>
+    <section className="mt-8 w-full rounded-3xl bg-white p-6 text-left shadow-sm ring-1 ring-zinc-200/70">
+      <div className="mb-6">
+        <p className="text-sm font-medium text-zinc-500">
+          Budget vs Actual
+        </p>
+        <h2 className="mt-1 text-2xl font-semibold text-zinc-900">
+          Revenue Performance
+        </h2>
       </div>
-    </div>
+
+      {!metrics.hasBudgetData ? (
+        <div className="rounded-2xl bg-zinc-50 p-6 text-sm text-zinc-500">
+          {metrics.message}
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="rounded-2xl bg-zinc-50 p-5">
+              <p className="text-sm text-zinc-500">Budget</p>
+              <p className="mt-2 text-2xl font-semibold text-zinc-900">
+                {formatNumber(metrics.budget)}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-zinc-50 p-5">
+              <p className="text-sm text-zinc-500">Actual</p>
+              <p className="mt-2 text-2xl font-semibold text-zinc-900">
+                {formatNumber(metrics.actual)}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-zinc-50 p-5">
+              <p className="text-sm text-zinc-500">Variance</p>
+              <p
+                className={`mt-2 text-2xl font-semibold ${
+                  isPositive ? "text-emerald-600" : "text-red-600"
+                }`}
+              >
+                {isPositive ? "+" : ""}
+                {formatNumber(metrics.variance)}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-zinc-50 p-5">
+              <p className="text-sm text-zinc-500">Variance %</p>
+              <p
+                className={`mt-2 text-2xl font-semibold ${
+                  isPositive ? "text-emerald-600" : "text-red-600"
+                }`}
+              >
+                {isPositive ? "+" : ""}
+                {formatPercent(metrics.variancePct)}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 text-xs text-zinc-400">
+            Actual column: {metrics.actualColumn} · Budget column:{" "}
+            {metrics.budgetColumn}
+          </div>
+        </>
+      )}
+    </section>
   );
 }
