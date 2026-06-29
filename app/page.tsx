@@ -20,6 +20,36 @@ export default function Home() {
   const [sheetNames, setSheetNames] = useState<string[]>([]);
   const [selectedSheet, setSelectedSheet] = useState<string | null>(null);
   const [sheetRows, setSheetRows] = useState<Row[]>([]);
+  const [isLoadingSample, setIsLoadingSample] = useState(false);
+
+  function resetWorkbook() {
+    workbookRef.current = null;
+    setFileName(null);
+    setSheetNames([]);
+    setSelectedSheet(null);
+    setSheetRows([]);
+  }
+
+  function loadWorkbook(workbook: XLSX.WorkBook, displayFileName: string) {
+    workbookRef.current = workbook;
+    setFileName(displayFileName);
+
+    const names = workbook.SheetNames;
+    setSheetNames(names);
+
+    const preferredSheetName = names.includes("P&L_Monthly_Upload")
+      ? "P&L_Monthly_Upload"
+      : names[0];
+
+    if (!preferredSheetName) {
+      setSelectedSheet(null);
+      setSheetRows([]);
+      return;
+    }
+
+    setSelectedSheet(preferredSheetName);
+    setSheetRows(getSheetRows(workbook, preferredSheetName));
+  }
 
   function loadSheet(sheetName: string) {
     const workbook = workbookRef.current;
@@ -35,33 +65,40 @@ export default function Home() {
 
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
+
     if (!file) {
-      workbookRef.current = null;
-      setFileName(null);
-      setSheetNames([]);
-      setSelectedSheet(null);
-      setSheetRows([]);
+      resetWorkbook();
       return;
     }
-
-    setFileName(file.name);
 
     const buffer = await file.arrayBuffer();
     const workbook = XLSX.read(buffer, { type: "array" });
-    workbookRef.current = workbook;
 
-    const names = workbook.SheetNames;
-    setSheetNames(names);
+    loadWorkbook(workbook, file.name);
+  }
 
-    const firstSheetName = names[0];
-    if (!firstSheetName) {
-      setSelectedSheet(null);
-      setSheetRows([]);
-      return;
+  async function handleSampleDatasetClick() {
+    try {
+      setIsLoadingSample(true);
+
+      const response = await fetch(
+        "/sample-data/enterprise-finance-sample.xlsx"
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to load sample dataset.");
+      }
+
+      const buffer = await response.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: "array" });
+
+      loadWorkbook(workbook, "enterprise-finance-sample.xlsx");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to load the sample dataset. Please check the sample file.");
+    } finally {
+      setIsLoadingSample(false);
     }
-
-    setSelectedSheet(firstSheetName);
-    setSheetRows(getSheetRows(workbook, firstSheetName));
   }
 
   const previewRows = sheetRows.slice(0, 10);
@@ -78,14 +115,40 @@ export default function Home() {
           AI Powered Financial Analysis
         </p>
 
-        <label className="group mt-16 cursor-pointer">
-          <input
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            className="sr-only"
-            onChange={handleFileChange}
-          />
-          <span className="inline-flex items-center gap-3 rounded-2xl bg-zinc-900 px-12 py-5 text-lg font-medium text-white shadow-lg shadow-zinc-900/10 transition-all duration-200 hover:bg-zinc-800 hover:shadow-xl hover:shadow-zinc-900/15 active:scale-[0.98]">
+        <div className="mt-16 flex flex-col items-center gap-3 sm:flex-row">
+          <label className="group cursor-pointer">
+            <input
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              className="sr-only"
+              onChange={handleFileChange}
+            />
+            <span className="inline-flex items-center gap-3 rounded-2xl bg-zinc-900 px-12 py-5 text-lg font-medium text-white shadow-lg shadow-zinc-900/10 transition-all duration-200 hover:bg-zinc-800 hover:shadow-xl hover:shadow-zinc-900/15 active:scale-[0.98]">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                className="h-6 w-6"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+                />
+              </svg>
+              Upload Excel
+            </span>
+          </label>
+
+          <button
+            type="button"
+            onClick={handleSampleDatasetClick}
+            disabled={isLoadingSample}
+            className="inline-flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-10 py-5 text-lg font-medium text-zinc-900 shadow-lg shadow-zinc-900/5 transition-all duration-200 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-xl hover:shadow-zinc-900/10 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -98,21 +161,19 @@ export default function Home() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+                d="M3 13.125C3 12.504 3.504 12 4.125 12h3.75C8.496 12 9 12.504 9 13.125v6.75C9 20.496 8.496 21 7.875 21h-3.75A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-3.75a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125C16.5 3.504 17.004 3 17.625 3h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
               />
             </svg>
-            Upload Excel
-          </span>
-        </label>
+            {isLoadingSample ? "Loading..." : "Try Sample Dataset"}
+          </button>
+        </div>
 
         {fileName ? (
           <p className="mt-6 text-sm font-medium text-zinc-600">
             Selected file: {fileName}
           </p>
         ) : (
-          <p className="mt-6 text-sm text-zinc-400">
-            .xlsx, .xls, or .csv
-          </p>
+          <p className="mt-6 text-sm text-zinc-400">.xlsx, .xls, or .csv</p>
         )}
 
         {sheetNames.length > 0 && selectedSheet && (
@@ -151,7 +212,7 @@ export default function Home() {
         {selectedSheet && <KpiCards metrics={kpis} />}
 
         {selectedSheet && <ExecutiveInsights rows={sheetRows} />}
-        
+
         {selectedSheet && <BudgetVsActual data={sheetRows} />}
 
         {selectedSheet && <TrendCharts chartData={trendChartData} />}
