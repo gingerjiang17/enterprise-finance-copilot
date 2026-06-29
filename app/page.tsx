@@ -7,11 +7,13 @@ import BudgetVsActual from "@/components/BudgetVsActual";
 import ExecutiveInsights from "@/components/ExecutiveInsights";
 import BusinessUnitPerformance from "@/components/BusinessUnitPerformance";
 import RegionPerformance from "@/components/RegionPerformance";
+import GlActualsSummary from "@/components/GlActualsSummary";
 import PreviewTable from "@/components/PreviewTable";
 import TrendCharts from "@/components/TrendCharts";
 import { buildTrendChartData } from "@/lib/charts";
 import { getSheetRows, type Row } from "@/lib/excel";
 import { calculateKpis } from "@/lib/kpi";
+import { detectSheetType } from "@/lib/sheetType";
 
 export default function Home() {
   const workbookRef = useRef<XLSX.WorkBook | null>(null);
@@ -104,6 +106,7 @@ export default function Home() {
   const previewRows = sheetRows.slice(0, 10);
   const kpis = calculateKpis(sheetRows);
   const trendChartData = buildTrendChartData(sheetRows);
+  const sheetType = detectSheetType(sheetRows);
 
   return (
     <div className="flex min-h-full flex-1 flex-col items-center bg-[#f5f5f7] px-6 py-16 font-sans">
@@ -111,6 +114,7 @@ export default function Home() {
         <h1 className="text-5xl font-semibold tracking-tight text-zinc-900 sm:text-6xl">
           Finance Dashboard
         </h1>
+
         <p className="mt-4 text-xl font-normal text-zinc-500 sm:text-2xl">
           AI Powered Financial Analysis
         </p>
@@ -123,6 +127,7 @@ export default function Home() {
               className="sr-only"
               onChange={handleFileChange}
             />
+
             <span className="inline-flex items-center gap-3 rounded-2xl bg-zinc-900 px-12 py-5 text-lg font-medium text-white shadow-lg shadow-zinc-900/10 transition-all duration-200 hover:bg-zinc-800 hover:shadow-xl hover:shadow-zinc-900/15 active:scale-[0.98]">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -181,6 +186,7 @@ export default function Home() {
             <label htmlFor="worksheet" className="sr-only">
               Worksheet
             </label>
+
             <select
               id="worksheet"
               value={selectedSheet}
@@ -193,6 +199,7 @@ export default function Home() {
                 </option>
               ))}
             </select>
+
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
@@ -209,17 +216,25 @@ export default function Home() {
           </div>
         )}
 
-        {selectedSheet && <KpiCards metrics={kpis} />}
+        {selectedSheet && sheetType === "pl" && (
+          <>
+            <KpiCards metrics={kpis} />
 
-        {selectedSheet && <ExecutiveInsights rows={sheetRows} />}
+            <ExecutiveInsights rows={sheetRows} />
 
-        {selectedSheet && <BudgetVsActual data={sheetRows} />}
+            <BudgetVsActual data={sheetRows} />
 
-        {selectedSheet && <TrendCharts chartData={trendChartData} />}
+            <TrendCharts chartData={trendChartData} />
 
-        {selectedSheet && <BusinessUnitPerformance rows={sheetRows} />}
+            <BusinessUnitPerformance rows={sheetRows} />
 
-        {selectedSheet && <RegionPerformance rows={sheetRows} />}
+            <RegionPerformance rows={sheetRows} />
+          </>
+        )}
+
+        {selectedSheet && sheetType === "gl" && (
+          <GlActualsSummary rows={sheetRows} />
+        )}
 
         <PreviewTable rows={previewRows} />
       </main>
