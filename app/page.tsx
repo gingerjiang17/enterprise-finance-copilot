@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import KpiCards from "@/components/KpiCards";
 import BudgetVsActual from "@/components/BudgetVsActual";
+import ExecutiveInsights from "@/components/ExecutiveInsights";
 import BusinessUnitPerformance from "@/components/BusinessUnitPerformance";
 import PreviewTable from "@/components/PreviewTable";
 import TrendCharts from "@/components/TrendCharts";
@@ -147,6 +148,8 @@ export default function Home() {
         )}
 
         {selectedSheet && <KpiCards metrics={kpis} />}
+
+        {selectedSheet && <ExecutiveInsights rows={sheetRows} />}
         
         {selectedSheet && <BudgetVsActual data={sheetRows} />}
 
