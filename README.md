@@ -1,291 +1,197 @@
 # Enterprise Finance Copilot
 
-Live Demo: https://enterprise-finance-copilot.vercel.app/
+## AI-Assisted Finance Automation Project
 
-A modern enterprise finance dashboard built with **Next.js**, **React**, **TypeScript**, **Tailwind CSS**, **Recharts**, and **xlsx**.
+Enterprise Finance Copilot 是一个使用 **AI-assisted development（AI辅助开发）** 完成的财务分析自动化作品项目。
 
-This is an **AI-assisted learning and portfolio project** created to practice frontend development, financial data processing, and enterprise-style finance analysis workflows.
-
-The project turns raw Excel financial data into dashboard-based financial analysis, including KPI cards, budget variance analysis, trend charts, business unit performance, region performance, and rule-based executive finance insights.
+这个项目更侧重于展示我如何借助 AI 工具，将财务工作中常见的 Excel 分析流程转化为一个可运行、可展示、可交互的 Dashboard。
 
 ---
 
-## 中文简介
+## Live Demo
 
-**Enterprise Finance Copilot** 是一个 AI 辅助完成的企业财务分析 Dashboard 学习型 Portfolio 项目，使用 **Next.js、React、TypeScript、Tailwind CSS、Recharts 和 xlsx** 构建。
+Live Demo：
 
-这个项目的目标不是声称完全独立手写所有代码，而是通过真实项目流程学习和练习：
+https://enterprise-finance-copilot.vercel.app/
 
-* 财务分析需求拆解
-* Excel 财务数据处理
-* KPI / Budget vs Actual / Gross Margin / Revenue Share 分析逻辑
-* React 组件化开发
-* TypeScript 类型检查
-* Dashboard UI 结构设计
-* Git / GitHub 版本管理
-* 使用 AI 作为 coding coach 辅助学习和开发
+GitHub Repository：
 
-项目核心思路是将原始 Excel 财务数据转化为管理层可读的分析结果：
+https://github.com/gingerjiang17/enterprise-finance-copilot
+
+---
+
+## 项目目的
+
+在财务工作中，很多分析仍然依赖 Excel，例如：
+
+* 月度经营数据整理
+* Budget vs Actual 分析
+* KPI 汇总
+* Business Unit 分析
+* Region 分析
+* GL Actuals 检查
+* 管理层汇报摘要
+
+这个项目尝试用 AI-assisted coding 的方式，把这些重复性的 Excel-based 财务分析流程做成一个自动化 Dashboard。
+
+我想通过这个作品展示：
+
+* 我能理解财务分析场景
+* 我能把财务需求拆解成清楚的功能模块
+* 我能使用 AI 辅助完成代码实现
+* 我能把 Excel 数据转化成可视化分析结果
+* 我具备使用 AI 提升财务工作效率的意识和能力
+
+---
+
+## 使用方式
+
+### 方式一：直接体验示例数据
+
+打开 Live Demo 后，点击：
 
 ```text
-Raw Excel Data
-→ Financial Data Processing
-→ KPI Calculation
-→ Budget Variance Analysis
-→ Business Unit / Region Breakdown
-→ Executive Finance Insights
+Try Sample Dataset
 ```
 
-换句话说，它不是一个普通 Excel Viewer，而是一个模拟企业财务分析场景的 Finance Dashboard / Finance Copilot Portfolio 项目。
+即可直接加载内置示例数据，不需要准备 Excel 文件。
+
+### 方式二：上传自己的 Excel 文件
+
+支持上传：
+
+* `.xlsx`
+* `.xls`
+* `.csv`
+
+上传后可以选择不同 worksheet，并查看对应分析结果。
 
 ---
 
-## Development Note
+## 目前实现的自动化分析流程
 
-This project was developed through an AI-assisted workflow.
+### 1. Excel 数据读取
 
-I used AI as a coding coach and technical guide during the development process. My focus was on:
-
-* Defining the finance dashboard requirements
-* Designing the analysis flow from company-level KPIs to business dimensions
-* Providing and testing the Excel dataset
-* Reviewing the output in the browser
-* Identifying UI and logic issues
-* Running local development and production builds
-* Debugging TypeScript and runtime errors with guidance
-* Managing Git commits and GitHub pushes
-* Understanding the separation between UI components and business logic
-
-The purpose of this project is not to claim full independent production-level development experience. Instead, it is a learning portfolio project that demonstrates how I practiced combining finance knowledge, frontend development, data processing, and AI-assisted software development workflow.
+系统可以读取 Excel workbook，并显示不同 worksheet 的 preview table。
 
 ---
 
-## Overview
+### 2. Sheet 自动识别
 
-**Enterprise Finance Copilot** is a portfolio project designed to simulate a real-world finance analytics workflow.
+系统会根据栏位判断当前 worksheet 类型：
 
-Instead of only displaying uploaded Excel data, the dashboard parses financial datasets, detects relevant columns, calculates financial metrics, aggregates performance by business dimensions, and generates rule-based executive insights.
+| Sheet 类型         | 显示内容                               |
+| ---------------- | ---------------------------------- |
+| P&L Sheet        | 完整财务分析 Dashboard                   |
+| GL Actuals Sheet | GL Actuals Summary + Preview Table |
+| Unknown Sheet    | Preview Table Only                 |
 
-The project helped me practice:
+页面会显示 Sheet Type Badge：
 
-* Frontend development with Next.js and React
-* Type-safe development with TypeScript
-* Component-based UI architecture
-* Financial data processing logic
-* Enterprise-style dashboard design
-* Git / GitHub version control workflow
-* Separation of UI components and business logic
+* P&L Analysis
+* GL Actuals
+* Preview Only
+
+这样可以避免把不适合的数据强行套入错误的分析模块。
 
 ---
 
-## Key Features
+### 3. KPI 自动汇总
 
-### Excel Upload
-
-Users can upload `.xlsx`, `.xls`, or `.csv` files directly into the dashboard.
-
-### Multi-Sheet Support
-
-The dashboard supports Excel workbooks with multiple worksheets and allows users to switch between sheets.
-
-### Preview Table
-
-Displays a preview of the selected worksheet so users can verify the uploaded data.
-
-### KPI Cards
-
-Automatically calculates and displays key financial metrics:
+针对 P&L 数据，系统会自动计算：
 
 * Revenue
 * Gross Profit
 * Gross Margin
-* Net Profit
+* Operating Expense
+* Operating Income
 
-### Budget vs Actual Analysis
+---
 
-Compares actual revenue against budget revenue and calculates:
+### 4. Budget vs Actual 自动分析
 
-* Budget
-* Actual
+系统会从 Excel 数据中读取 Actual 与 Budget，并计算：
+
 * Variance
 * Variance %
-* Favorable / Unfavorable / On Target status
+* Favorable / Unfavorable
 
-The module also supports friendly empty states when required columns are missing.
+这是财务分析、FP&A 和管理会计中常见的分析场景。
 
-### Trend Charts
+---
 
-Uses Recharts to visualize:
+### 5. 趋势图分析
+
+系统会把财务数据转成趋势图，包括：
 
 * Revenue Trend
 * Gross Margin Trend
 
-### Business Unit Performance
+用于观察不同期间的业绩变化。
 
-Breaks down performance by business unit:
+---
+
+### 6. Business Unit 分析
+
+系统会按 Business Unit 汇总：
 
 * Revenue
 * Gross Profit
 * Gross Margin
 * Revenue Share
 
-This helps answer questions such as:
+用于查看不同业务单元的贡献。
 
-* Which business unit contributes the most revenue?
-* Which business unit has the strongest gross margin?
-* How much revenue share does each business unit represent?
+---
 
-### Region Performance
+### 7. Region 分析
 
-Breaks down performance by region:
+系统会按 Region 汇总：
 
 * Revenue
 * Gross Profit
 * Gross Margin
 * Revenue Share
 
-This extends the dashboard from company-level analysis into geographic performance analysis.
-
-### Executive Finance Insights
-
-Generates rule-based executive insights from the uploaded dataset, such as:
-
-* Revenue overview
-* Budget variance commentary
-* Gross margin performance
-* Top business unit contribution
-* Business unit margin comparison
-
-This moves the project closer to a finance copilot experience instead of being only a static dashboard.
+用于查看不同区域的经营表现。
 
 ---
 
-## Finance Analysis Logic
+### 8. Rule-based Management Insights
 
-The dashboard is designed around common enterprise finance analysis workflows:
+系统会根据数据自动生成 rule-based management insights，用来模拟财务分析人员对管理层汇报时提炼重点。
 
-```text
-Company Total
-→ Budget vs Actual
-→ Trend Analysis
-→ Business Unit Performance
-→ Region Performance
-→ Raw Data Review
-```
+目前 insights 主要覆盖：
 
-The current analysis modules support:
-
-* Column detection
-* Numeric parsing
-* KPI calculation
-* Budget variance analysis
-* Revenue and gross profit aggregation
-* Gross margin calculation
-* Revenue share calculation
-* Empty state handling for incomplete datasets
-* Rule-based executive commentary
+* 收入表现
+* 毛利率变化
+* 预算差异
+* 业务单元贡献
+* 区域表现
 
 ---
 
-## Tech Stack
+### 9. GL Actuals Summary
 
-* **Next.js** - App Router based React framework
-* **React** - Component-based UI development
-* **TypeScript** - Type-safe frontend development
-* **Tailwind CSS** - Utility-first styling
-* **Recharts** - Data visualization
-* **xlsx** - Excel parsing
-* **Git / GitHub** - Version control and portfolio hosting
+针对 GL Actuals sheet，系统会显示专门的 GL Actuals Summary，而不是强行显示 P&L Dashboard。
+
+这样更接近真实财务工作中对不同数据源进行分类处理的场景。
 
 ---
 
-## Project Architecture
+## AI / Vibe Coding 体现在哪里
 
-The project follows a simple but scalable separation between UI and business logic.
+这个项目是通过 AI-assisted coding 的方式逐步完成的。
 
-```text
-app/
-  page.tsx
+我的工作方式包括：
 
-components/
-  KpiCards.tsx
-  PreviewTable.tsx
-  ChartCard.tsx
-  TrendCharts.tsx
-  TrendLineChart.tsx
-  BudgetVsActual.tsx
-  BusinessUnitPerformance.tsx
-  RegionPerformance.tsx
-  ExecutiveInsights.tsx
+* 把财务分析需求拆成一个个小模块
+* 用 AI 协助规划功能和代码结构
+* 根据报错信息逐步 debug
+* 通过小版本迭代完成 dashboard
+* 不断调整页面展示，使其更适合财务作品展示
 
-lib/
-  excel.ts
-  kpi.ts
-  format.ts
-  columns.ts
-  charts.ts
-  budget.ts
-  businessUnit.ts
-  dimensionPerformance.ts
-  insights.ts
-```
-
-### Components Layer
-
-The `components/` folder is responsible for UI rendering.
-
-Examples:
-
-* KPI cards
-* Tables
-* Chart sections
-* Dashboard modules
-* Empty states
-
-### Lib Layer
-
-The `lib/` folder is responsible for business logic and data transformation.
-
-Examples:
-
-* Excel parsing
-* KPI calculation
-* Column detection
-* Budget analysis
-* Business unit aggregation
-* Region aggregation
-* Executive insight generation
-
-This separation keeps the UI cleaner and makes the financial logic easier to understand, maintain, and extend.
-
----
-
-## Dataset
-
-The project is tested with a sample enterprise finance dataset:
-
-```text
-Enterprise_Finance_Dashboard_Dataset.xlsx
-```
-
-Main worksheet used for dashboard analysis:
-
-```text
-P&L_Monthly_Upload
-```
-
-Example columns include:
-
-* Period
-* Business Unit
-* Region
-* Revenue
-* Gross Profit
-* Gross Margin
-* Net Profit
-* Budget Revenue
-
-The dashboard also handles sheets that do not contain all required columns by showing friendly empty states instead of crashing.
+项目从 v0.1 到 v1.1 是逐步迭代完成的，而不是一次性生成。
 
 ---
 
@@ -293,121 +199,123 @@ The dashboard also handles sheets that do not contain all required columns by sh
 
 ### v0.1 Initial Finance Dashboard
 
-* Added Excel upload
-* Added selected file display
-* Added multi-sheet selector
-* Added preview table
-* Added KPI cards
-* Added Excel parsing logic
-* Initialized Git / GitHub repository
+* Excel Upload
+* Sheet selector
+* Preview Table
+* KPI Cards
 
-### v0.2 Revenue and Gross Margin Trend Charts
+### v0.2 Trend Charts
 
-* Added Revenue Trend by period
-* Added Gross Margin Trend by period
-* Integrated Recharts
-* Extracted chart logic into reusable components and lib functions
+* Revenue Trend
+* Gross Margin Trend
 
-### v0.3 Budget vs Actual Analysis
+### v0.3 Budget vs Actual
 
-* Added Budget vs Actual module
-* Added actual revenue and budget revenue comparison
-* Added variance and variance percentage calculation
-* Integrated module into the dashboard
-
-### v0.3.1 Read Budget Data from Excel
-
-* Replaced hardcoded budget value
-* Read budget revenue directly from Excel
-* Added budget analysis logic in `lib/budget.ts`
-
-### v0.3.2 Finalize Budget vs Actual Module
-
-* Added support for multiple budget and actual column names
-* Added professional empty state handling
-* Added compact number formatting
-* Added Favorable / Unfavorable / On Target status
-* Added Budget vs Actual comparison bar
-* Added column mapping display
+* Budget vs Actual analysis
+* Variance / Variance % / Favorable / Unfavorable
 
 ### v0.4 Business Unit Performance
 
-* Added business unit performance analysis
-* Added revenue, gross profit, gross margin, and revenue share by business unit
-* Added reusable business unit aggregation logic
-* Added empty state handling for sheets without required business unit columns
+* 按 Business Unit 汇总 Revenue / Gross Profit / Gross Margin / Revenue Share
 
 ### v0.5 Executive Finance Insights
 
-* Added automated executive-level financial insights
-* Added revenue overview, budget variance, gross margin, and business unit commentary
-* Added Positive / Attention / Insight status labels
-* Added empty state handling for sheets without required financial columns
+* 根据数据自动生成 rule-based management insights
 
-### v0.6 Region Performance Analysis
+### v0.6 Region Performance
 
-* Added region-level performance analysis
-* Added reusable dimension performance aggregation logic
-* Added revenue, gross profit, gross margin, and revenue share by region
-* Reordered dashboard sections for a better executive review flow
+* 按 Region 汇总 Revenue / Gross Profit / Gross Margin / Revenue Share
 
 ### v0.7 Portfolio README Documentation
 
-* Added professional README documentation
-* Added Chinese project summary for HR and non-technical reviewers
-* Added AI-assisted development note
-* Documented project overview, features, tech stack, architecture, and roadmap
-* Prepared the project for GitHub portfolio presentation
+* 初版 README 文档
+
+### v0.8 Deployment & Live Demo
+
+* 部署到 Vercel
+* 完成线上 Demo
+
+### v0.9 Sample Dataset Demo Mode
+
+* 新增 sample dataset
+* 新增 Try Sample Dataset 按钮
+* 支持一键体验 demo
+
+### v1.0 Sheet Type Rendering + GL Actuals Summary
+
+* 新增 Sheet Type Detection
+* 新增 GL Actuals Summary
+* P&L / GL / Unknown sheet 分流显示
+
+### v1.1 Portfolio Polish
+
+* 首页标题改为 Enterprise Finance Copilot
+* 项目定位改为 AI-Assisted Finance Analytics Project
+* 新增 Sheet Type Badge
+* 优化首页展示和 worksheet 类型说明
 
 ---
 
-## Getting Started
+## Tools Used
 
-### 1. Clone the repository
+这个项目使用了以下工具和技术作为实现手段：
 
-```bash
-git clone https://github.com/gingerjiang17/enterprise-finance-copilot.git
+| Area                    | Tool / Technology     |
+| ----------------------- | --------------------- |
+| AI-assisted development | ChatGPT / Vibe Coding |
+| Framework               | Next.js               |
+| UI                      | React                 |
+| Language                | TypeScript            |
+| Styling                 | Tailwind CSS          |
+| Excel parsing           | SheetJS / xlsx        |
+| Charts                  | Recharts              |
+| Deployment              | Vercel                |
+
+这些技术不是项目的核心目的，而是我用来实现财务自动化想法的工具。
+
+---
+
+## Project Structure
+
+```text
+app/
+  page.tsx
+
+components/
+  BudgetVsActual.tsx
+  BusinessUnitPerformance.tsx
+  ExecutiveInsights.tsx
+  GlActualsSummary.tsx
+  KpiCards.tsx
+  PreviewTable.tsx
+  RegionPerformance.tsx
+  SheetTypeBadge.tsx
+  TrendCharts.tsx
+
+lib/
+  budget.ts
+  charts.ts
+  excel.ts
+  glActuals.ts
+  insights.ts
+  kpi.ts
+  sheetType.ts
+
+public/
+  sample-data/
+    enterprise-finance-sample.xlsx
 ```
 
-### 2. Navigate to the project folder
+---
 
-```bash
-cd enterprise-finance-copilot
-```
-
-### 3. Install dependencies
+## Local Development
 
 ```bash
 npm install
-```
-
-### 4. Run the development server
-
-```bash
 npm run dev
 ```
 
-### 5. Open the app
-
-Open the local development URL shown in the terminal.
-
-Usually:
-
-```text
-http://localhost:3000
-```
-
----
-
-## Available Scripts
-
-### Run development server
-
-```bash
-npm run dev
-```
-
-### Create production build
+Build：
 
 ```bash
 npm run build
@@ -415,68 +323,29 @@ npm run build
 
 ---
 
-## Portfolio Highlights
+## Limitations
 
-This project is mainly a learning portfolio project, but it demonstrates practical understanding across finance analysis and frontend development.
+这是一个作品项目，不是正式生产系统。
 
-From a finance and analytics perspective, the project covers:
+当前限制包括：
 
-* KPI design
-* Budget variance logic
-* Margin analysis
-* Revenue contribution analysis
-* Business unit performance review
-* Regional performance review
-* Executive summary generation
-
-From a frontend engineering perspective, the project covers:
-
-* Component decomposition
-* Reusable data transformation functions
-* Clean separation between UI and logic
-* Empty state handling
-* TypeScript type checking
-* Production build validation
-* Iterative version-based development
+* 暂无后端数据库
+* 暂无用户登录系统
+* Sheet 识别依赖固定栏位
+* Insights 是 rule-based，不是实时调用 AI API
+* 上传数据仅在浏览器端使用
 
 ---
 
-## What I Learned
+## Future Improvements
 
-Through this project, I practiced:
+后续可以继续扩展：
 
-* How Excel data can be parsed and transformed into usable frontend data
-* How to separate UI components from financial calculation logic
-* How to calculate common finance metrics such as gross margin and revenue share
-* How to design empty states for incomplete datasets
-* How to use Git commits to manage incremental versions
-* How to debug TypeScript errors during production build
-* How to use AI assistance responsibly as a learning and development tool
-
----
-
-## Future Roadmap
-
-Potential future improvements:
-
-* Add product-level performance analysis
-* Add customer-level revenue concentration analysis
-* Add exportable executive summary
-* Add scenario analysis
-* Add AI-powered commentary using an LLM API
-* Add charts for business unit and region performance
-* Add Vercel deployment
-* Add screenshots and demo video
-* Add unit tests for financial calculation logic
-
----
-
-## Project Status
-
-Current version:
-
-```text
-v0.7 Portfolio README Documentation
-```
-
-The dashboard currently supports Excel-based financial analysis from company-level KPIs down to business unit and region-level performance.
+* 更灵活的 column mapping
+* Cash Flow 分析
+* Balance Sheet 分析
+* 更完整的 variance explanation
+* PDF export
+* Dashboard screenshot export
+* AI-generated commentary
+* 多公司 / 多期间比较
