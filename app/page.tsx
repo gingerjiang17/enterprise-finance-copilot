@@ -6,6 +6,7 @@ import KpiCards from "@/components/KpiCards";
 import BudgetVsActual from "@/components/BudgetVsActual";
 import ExecutiveInsights from "@/components/ExecutiveInsights";
 import BusinessUnitPerformance from "@/components/BusinessUnitPerformance";
+import RegionPerformance from "@/components/RegionPerformance";
 import PreviewTable from "@/components/PreviewTable";
 import TrendCharts from "@/components/TrendCharts";
 import { buildTrendChartData } from "@/lib/charts";
@@ -153,9 +154,11 @@ export default function Home() {
         
         {selectedSheet && <BudgetVsActual data={sheetRows} />}
 
+        {selectedSheet && <TrendCharts chartData={trendChartData} />}
+
         {selectedSheet && <BusinessUnitPerformance rows={sheetRows} />}
 
-        {selectedSheet && <TrendCharts chartData={trendChartData} />}
+        {selectedSheet && <RegionPerformance rows={sheetRows} />}
 
         <PreviewTable rows={previewRows} />
       </main>
