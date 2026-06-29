@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import KpiCards from "@/components/KpiCards";
 import BudgetVsActual from "@/components/BudgetVsActual";
+import BusinessUnitPerformance from "@/components/BusinessUnitPerformance";
 import PreviewTable from "@/components/PreviewTable";
 import TrendCharts from "@/components/TrendCharts";
 import { buildTrendChartData } from "@/lib/charts";
@@ -148,6 +149,8 @@ export default function Home() {
         {selectedSheet && <KpiCards metrics={kpis} />}
         
         {selectedSheet && <BudgetVsActual data={sheetRows} />}
+
+        {selectedSheet && <BusinessUnitPerformance rows={sheetRows} />}
 
         {selectedSheet && <TrendCharts chartData={trendChartData} />}
 
