@@ -8,6 +8,7 @@ import ExecutiveInsights from "@/components/ExecutiveInsights";
 import BusinessUnitPerformance from "@/components/BusinessUnitPerformance";
 import RegionPerformance from "@/components/RegionPerformance";
 import GlActualsSummary from "@/components/GlActualsSummary";
+import SheetTypeBadge from "@/components/SheetTypeBadge";
 import PreviewTable from "@/components/PreviewTable";
 import TrendCharts from "@/components/TrendCharts";
 import { buildTrendChartData } from "@/lib/charts";
@@ -112,11 +113,16 @@ export default function Home() {
     <div className="flex min-h-full flex-1 flex-col items-center bg-[#f5f5f7] px-6 py-16 font-sans">
       <main className="flex w-full max-w-6xl flex-col items-center text-center">
         <h1 className="text-5xl font-semibold tracking-tight text-zinc-900 sm:text-6xl">
-          Finance Dashboard
+          Enterprise Finance Copilot
         </h1>
 
         <p className="mt-4 text-xl font-normal text-zinc-500 sm:text-2xl">
-          AI Powered Financial Analysis
+          AI-Assisted Finance Analytics Project
+        </p>
+
+        <p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
+          A finance portfolio project built with Next.js and AI-assisted coding
+          to automate Excel-based KPI, variance, trend, and GL analysis.
         </p>
 
         <div className="mt-16 flex flex-col items-center gap-3 sm:flex-row">
@@ -182,37 +188,43 @@ export default function Home() {
         )}
 
         {sheetNames.length > 0 && selectedSheet && (
-          <div className="relative mt-4 w-full max-w-xs">
+          <div className="mt-4 w-full max-w-xs">
             <label htmlFor="worksheet" className="sr-only">
               Worksheet
             </label>
 
-            <select
-              id="worksheet"
-              value={selectedSheet}
-              onChange={(event) => handleSheetChange(event.target.value)}
-              className="w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 py-2.5 pr-10 text-sm font-medium text-zinc-900 shadow-sm transition-colors hover:border-zinc-300 focus:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/10"
-            >
-              {sheetNames.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                id="worksheet"
+                value={selectedSheet}
+                onChange={(event) => handleSheetChange(event.target.value)}
+                className="w-full appearance-none rounded-xl border border-zinc-200 bg-white px-4 py-2.5 pr-10 text-sm font-medium text-zinc-900 shadow-sm transition-colors hover:border-zinc-300 focus:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/10"
+              >
+                {sheetNames.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
 
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
-                clipRule="evenodd"
-              />
-            </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+
+            <div className="mt-3">
+              <SheetTypeBadge type={sheetType} />
+            </div>
           </div>
         )}
 
