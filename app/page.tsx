@@ -11,6 +11,7 @@ import GlActualsSummary from "@/components/GlActualsSummary";
 import SheetTypeBadge from "@/components/SheetTypeBadge";
 import PreviewTable from "@/components/PreviewTable";
 import TrendCharts from "@/components/TrendCharts";
+import AiFinanceNarrative from "@/components/AiFinanceNarrative";
 import { buildTrendChartData } from "@/lib/charts";
 import { getSheetRows, type Row } from "@/lib/excel";
 import { calculateKpis } from "@/lib/kpi";
@@ -108,6 +109,7 @@ export default function Home() {
   const kpis = calculateKpis(sheetRows);
   const trendChartData = buildTrendChartData(sheetRows);
   const sheetType = detectSheetType(sheetRows);
+  const financeRows = sheetRows as Record<string, unknown>[];
 
   return (
     <div className="flex min-h-full flex-1 flex-col items-center bg-[#f5f5f7] px-6 py-16 font-sans">
@@ -121,7 +123,8 @@ export default function Home() {
         </p>
 
         <p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
-        基于 Excel 财务数据，自动生成 KPI 汇总、预算与实际对比、趋势图、业务单元 / 区域分析及总账实际数摘要。
+          基于 Excel 财务数据，自动生成 KPI 汇总、预算与实际对比、趋势图、业务单元 /
+          区域分析及总账实际数摘要。
         </p>
 
         <div className="mt-16 flex flex-col items-center gap-3 sm:flex-row">
@@ -180,7 +183,7 @@ export default function Home() {
 
         {fileName ? (
           <p className="mt-6 text-sm font-medium text-zinc-600">
-          当前文件：{fileName}
+            当前文件：{fileName}
           </p>
         ) : (
           <p className="mt-6 text-sm text-zinc-400">.xlsx, .xls, 或.csv</p>
@@ -233,6 +236,10 @@ export default function Home() {
 
             <ExecutiveInsights rows={sheetRows} />
 
+            <div className="mt-8 w-full text-left">
+              <AiFinanceNarrative rows={financeRows} sheetType={sheetType} />
+            </div>
+
             <BudgetVsActual data={sheetRows} />
 
             <TrendCharts chartData={trendChartData} />
@@ -244,7 +251,13 @@ export default function Home() {
         )}
 
         {selectedSheet && sheetType === "gl" && (
-          <GlActualsSummary rows={sheetRows} />
+          <>
+            <GlActualsSummary rows={sheetRows} />
+
+            <div className="mt-8 w-full text-left">
+              <AiFinanceNarrative rows={financeRows} sheetType={sheetType} />
+            </div>
+          </>
         )}
 
         <PreviewTable rows={previewRows} />
