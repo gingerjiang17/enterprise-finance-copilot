@@ -338,13 +338,13 @@ export default function BudgetVsActual({ data }: Props) {
               <VarianceDriverList
                 title="Top Favorable Drivers"
                 drivers={varianceDrivers.topFavorable}
-                emptyText="No favorable variance driver was detected."
+                emptyText="No net favorable variance driver was detected after grouping by Business Unit."
               />
 
               <VarianceDriverList
                 title="Top Unfavorable Drivers"
                 drivers={varianceDrivers.topUnfavorable}
-                emptyText="No unfavorable variance driver was detected."
+                emptyText="No unfavorable variance driver was detected after grouping by Business Unit."
               />
             </div>
 
