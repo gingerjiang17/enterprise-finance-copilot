@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import KpiCards from "@/components/KpiCards";
 import BudgetVsActual from "@/components/BudgetVsActual";
-import ExecutiveInsights from "@/components/ExecutiveInsights";
 import BusinessUnitPerformance from "@/components/BusinessUnitPerformance";
 import RegionPerformance from "@/components/RegionPerformance";
 import GlActualsSummary from "@/components/GlActualsSummary";
@@ -119,12 +118,11 @@ export default function Home() {
         </h1>
 
         <p className="mt-4 text-xl font-normal text-zinc-500 sm:text-2xl">
-          AI-Assisted Finance Analytics Project
+          AI-powered Financial Analytics & Variance Intelligence
         </p>
 
-        <p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
-          基于 Excel 财务数据，自动生成 KPI 汇总、预算与实际对比、趋势图、业务单元 /
-          区域分析及总账实际数摘要。
+        <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-500 sm:text-base">
+        基于 Excel 财务数据，自动生成 KPI 汇总、预算差异分析、趋势图、业务单元 / 区域分析、总账实际数摘要及 AI 风格管理层财务解读。
         </p>
 
         <div className="mt-16 flex flex-col items-center gap-3 sm:flex-row">
@@ -232,21 +230,33 @@ export default function Home() {
 
         {selectedSheet && sheetType === "pl" && (
           <>
+            <AiFinanceNarrative rows={financeRows} sheetType={sheetType} />
+
             <KpiCards metrics={kpis} />
-
-            <ExecutiveInsights rows={sheetRows} />
-
-            <div className="mt-8 w-full text-left">
-              <AiFinanceNarrative rows={financeRows} sheetType={sheetType} />
-            </div>
 
             <BudgetVsActual data={sheetRows} />
 
             <TrendCharts chartData={trendChartData} />
 
-            <BusinessUnitPerformance rows={sheetRows} />
+            <section className="mt-8 w-full text-left">
+              <div className="mb-4">
+                <p className="text-sm font-medium text-zinc-500">
+                  Segment Performance
+                </p>
+                <h2 className="mt-1 text-2xl font-semibold text-zinc-900">
+                  Business Unit & Region Analysis
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-zinc-500">
+                  Drill down into performance across business units and
+                  operating regions to identify concentration, growth, and
+                  margin patterns.
+                </p>
+              </div>
 
-            <RegionPerformance rows={sheetRows} />
+              <BusinessUnitPerformance rows={sheetRows} />
+
+              <RegionPerformance rows={sheetRows} />
+            </section>
           </>
         )}
 
@@ -254,9 +264,7 @@ export default function Home() {
           <>
             <GlActualsSummary rows={sheetRows} />
 
-            <div className="mt-8 w-full text-left">
-              <AiFinanceNarrative rows={financeRows} sheetType={sheetType} />
-            </div>
+            <AiFinanceNarrative rows={financeRows} sheetType={sheetType} />
           </>
         )}
 
