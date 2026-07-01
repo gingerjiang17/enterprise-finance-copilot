@@ -92,9 +92,8 @@ export default function AiFinanceNarrative({ rows, sheetType }: Props) {
             Management Commentary
           </h2>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">
-            Rule-based CFO-style commentary generated from uploaded finance
-            data, including key findings, risk flags, and recommended actions.
+          <p className="mt-2 max-w-5xl text-sm leading-6 text-zinc-500">
+            Rule-based CFO-style commentary generated from uploaded finance data, including key findings, risk flags, and recommended actions.
           </p>
         </div>
 

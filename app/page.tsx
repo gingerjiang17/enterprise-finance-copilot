@@ -122,7 +122,7 @@ export default function Home() {
         </p>
 
         <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-500 sm:text-base">
-        基于 Excel 财务数据，自动生成 KPI 汇总、预算差异分析、趋势图、业务单元 / 区域分析、总账实际数摘要及 AI 风格管理层财务解读。
+        这是一个结合 AI 与财务数据分析的作品项目，展示如何将 Excel 数据快速转化为 KPI 汇总、预算差异分析、风险提示和管理层摘要，帮助提升财务分析、信息整理和管理汇报的效率。
         </p>
 
         <div className="mt-16 flex flex-col items-center gap-3 sm:flex-row">
