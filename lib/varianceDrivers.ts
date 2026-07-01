@@ -24,22 +24,43 @@ export type VarianceDriverResult = {
   confidenceLevel: "High" | "Medium" | "Low";
 };
 
-const ACTUAL_PATTERNS = ["actual", "actuals", "current", "realized"];
-const BUDGET_PATTERNS = ["budget", "plan", "target"];
+const ACTUAL_PATTERNS = [
+  "actual revenue",
+  "actual sales",
+  "actual amount",
+  "actual",
+  "actuals",
+  "revenue",
+  "sales",
+  "current",
+  "realized",
+];
+
+const BUDGET_PATTERNS = [
+  "budget revenue",
+  "budget sales",
+  "budget amount",
+  "budget",
+  "plan",
+  "target",
+  "forecast",
+];
+
 const VARIANCE_PATTERNS = ["variance", "var", "diff", "difference"];
+
 const DIMENSION_PATTERNS = [
-  "account",
-  "account name",
-  "category",
-  "line item",
-  "item",
-  "description",
   "business unit",
   "bu",
   "region",
   "department",
   "dept",
   "division",
+  "account",
+  "account name",
+  "category",
+  "line item",
+  "item",
+  "description",
 ];
 
 const COST_PATTERNS = [
@@ -66,7 +87,9 @@ function keyMatches(key: string, patterns: string[]): boolean {
 
   return patterns.some((pattern) => {
     const normalizedPattern = normalizeKey(pattern);
-    return normalized === normalizedPattern || normalized.includes(normalizedPattern);
+    return (
+      normalized === normalizedPattern || normalized.includes(normalizedPattern)
+    );
   });
 }
 
@@ -182,7 +205,10 @@ function getDirection(
   return variance > 0 ? "Favorable" : "Unfavorable";
 }
 
-function getSeverity(variancePct: number | null, variance: number): VarianceSeverity {
+function getSeverity(
+  variancePct: number | null,
+  variance: number
+): VarianceSeverity {
   const absPct = variancePct === null ? null : Math.abs(variancePct);
   const absVariance = Math.abs(variance);
 
@@ -215,42 +241,125 @@ function buildLabel(
 
 function buildManagementAttention(
   topUnfavorable: VarianceDriver[],
+  topFavorable: VarianceDriver[],
   actualField?: string,
-  budgetField?: string
+  budgetField?: string,
+  dimensionField?: string
 ): string[] {
-  if (topUnfavorable.length === 0) {
-    return [
-      "No major unfavorable variance was detected by the rule-based variance engine.",
-    ];
+  const attention: string[] = [];
+
+  if (topUnfavorable.length > 0) {
+    const largest = topUnfavorable[0];
+
+    attention.push(
+      `${largest.label} is the largest unfavorable driver, with a variance of approximately ${formatNumber(
+        largest.variance
+      )} (${formatPct(largest.variancePct)} vs budget).`
+    );
+
+    const highSeverityItems = topUnfavorable.filter(
+      (driver) => driver.severity === "High"
+    );
+
+    if (highSeverityItems.length > 0) {
+      attention.push(
+        `${highSeverityItems.length} high-severity unfavorable variance item${
+          highSeverityItems.length > 1 ? "s were" : " was"
+        } detected and should be reviewed with the relevant business owners.`
+      );
+    }
+  } else {
+    attention.push(
+      "No major unfavorable variance was detected by the rule-based variance engine."
+    );
   }
 
-  const largest = topUnfavorable[0];
+  if (topFavorable.length > 0) {
+    const largestFavorable = topFavorable[0];
 
-  const attention = [
-    `${largest.label} is the largest unfavorable driver, with a variance of approximately ${formatNumber(
-      largest.variance
-    )} (${formatPct(largest.variancePct)} vs budget).`,
-  ];
-
-  const highSeverityItems = topUnfavorable.filter(
-    (driver) => driver.severity === "High"
-  );
-
-  if (highSeverityItems.length > 0) {
     attention.push(
-      `${highSeverityItems.length} high-severity unfavorable variance item${
-        highSeverityItems.length > 1 ? "s were" : " was"
-      } detected and should be reviewed with business owners.`
+      `${largestFavorable.label} is the strongest favorable driver, contributing approximately ${formatNumber(
+        largestFavorable.variance
+      )} (${formatPct(largestFavorable.variancePct)} vs budget).`
     );
   }
 
   if (actualField && budgetField) {
     attention.push(
-      `Review ${actualField} against ${budgetField} and separate structural variance from one-off timing or reclassification impacts.`
+      `Review ${actualField} against ${budgetField} and separate structural variance from timing, mix, or one-off impacts.`
+    );
+  }
+
+  if (dimensionField) {
+    attention.push(
+      `Variance drivers are grouped by ${dimensionField}, helping management identify which segment requires follow-up.`
     );
   }
 
   return attention;
+}
+
+function aggregateDriversByLabel(drivers: VarianceDriver[]): VarianceDriver[] {
+  const groupedDrivers = new Map<
+    string,
+    {
+      label: string;
+      actual: number;
+      budget: number;
+      variance: number;
+      hasActual: boolean;
+      hasBudget: boolean;
+      isCostDriver: boolean;
+    }
+  >();
+
+  drivers.forEach((driver) => {
+    const existing = groupedDrivers.get(driver.label);
+
+    if (!existing) {
+      groupedDrivers.set(driver.label, {
+        label: driver.label,
+        actual: driver.actual ?? 0,
+        budget: driver.budget ?? 0,
+        variance: driver.variance,
+        hasActual: driver.actual !== null,
+        hasBudget: driver.budget !== null,
+        isCostDriver: driver.direction === "Unfavorable" && driver.variance > 0,
+      });
+
+      return;
+    }
+
+    existing.actual += driver.actual ?? 0;
+    existing.budget += driver.budget ?? 0;
+    existing.variance += driver.variance;
+    existing.hasActual = existing.hasActual || driver.actual !== null;
+    existing.hasBudget = existing.hasBudget || driver.budget !== null;
+  });
+
+  return Array.from(groupedDrivers.values())
+    .map((group) => {
+      const actual = group.hasActual ? group.actual : null;
+      const budget = group.hasBudget ? group.budget : null;
+      const variancePct =
+        budget !== null && budget !== 0
+          ? (group.variance / Math.abs(budget)) * 100
+          : null;
+
+      const direction = getDirection(group.variance, group.isCostDriver);
+      const severity = getSeverity(variancePct, group.variance);
+
+      return {
+        label: group.label,
+        actual,
+        budget,
+        variance: group.variance,
+        variancePct,
+        direction,
+        severity,
+      };
+    })
+    .filter((driver) => driver.direction !== "Neutral");
 }
 
 export function analyzeVarianceDrivers(
@@ -292,11 +401,13 @@ export function analyzeVarianceDrivers(
     };
   }
 
-  const drivers: VarianceDriver[] = rows
+  const rowLevelDrivers: VarianceDriver[] = rows
     .map((row, index) => {
       const actual = actualField ? toNumber(row[actualField]) : null;
       const budget = budgetField ? toNumber(row[budgetField]) : null;
-      const explicitVariance = varianceField ? toNumber(row[varianceField]) : null;
+      const explicitVariance = varianceField
+        ? toNumber(row[varianceField])
+        : null;
 
       const variance =
         explicitVariance ??
@@ -307,7 +418,9 @@ export function analyzeVarianceDrivers(
       }
 
       const variancePct =
-        budget !== null && budget !== 0 ? (variance / Math.abs(budget)) * 100 : null;
+        budget !== null && budget !== 0
+          ? (variance / Math.abs(budget)) * 100
+          : null;
 
       const isCostRow = inferIsCostRow(row);
       const direction = getDirection(variance, isCostRow);
@@ -324,6 +437,10 @@ export function analyzeVarianceDrivers(
       };
     })
     .filter((driver): driver is VarianceDriver => driver !== null);
+
+  const drivers = dimensionField
+    ? aggregateDriversByLabel(rowLevelDrivers)
+    : rowLevelDrivers;
 
   const topFavorable = drivers
     .filter((driver) => driver.direction === "Favorable")
@@ -352,8 +469,10 @@ export function analyzeVarianceDrivers(
     topUnfavorable,
     managementAttention: buildManagementAttention(
       topUnfavorable,
+      topFavorable,
       actualField,
-      budgetField
+      budgetField,
+      dimensionField
     ),
     confidenceLevel,
   };
