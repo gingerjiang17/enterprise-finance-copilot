@@ -2,6 +2,10 @@
 
 import { calculateBudgetVsActual } from "@/lib/budget";
 import type { Row } from "@/lib/excel";
+import {
+  analyzeVarianceDrivers,
+  type VarianceDriver,
+} from "@/lib/varianceDrivers";
 
 type Props = {
   data: Row[];
@@ -25,6 +29,17 @@ function formatPercent(value: number | null) {
   return `${value.toFixed(1)}%`;
 }
 
+function formatSignedCompactNumber(value: number) {
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${formatCompactNumber(value)}`;
+}
+
+function formatSignedPercent(value: number | null) {
+  if (value === null) return "n/a";
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(1)}%`;
+}
+
 function getStatusLabel(status: string) {
   if (status === "favorable") return "Favorable";
   if (status === "unfavorable") return "Unfavorable";
@@ -32,8 +47,92 @@ function getStatusLabel(status: string) {
   return "No Data";
 }
 
+function getSeverityClass(severity: VarianceDriver["severity"]) {
+  if (severity === "High") return "bg-red-50 text-red-700";
+  if (severity === "Medium") return "bg-amber-50 text-amber-700";
+  return "bg-zinc-100 text-zinc-600";
+}
+
+function getDirectionClass(direction: VarianceDriver["direction"]) {
+  if (direction === "Favorable") return "text-emerald-600";
+  if (direction === "Unfavorable") return "text-red-600";
+  return "text-zinc-600";
+}
+
+function VarianceDriverList({
+  title,
+  drivers,
+  emptyText,
+}: {
+  title: string;
+  drivers: VarianceDriver[];
+  emptyText: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-white p-4 ring-1 ring-zinc-200/70">
+      <h3 className="text-sm font-semibold text-zinc-900">{title}</h3>
+
+      {drivers.length > 0 ? (
+        <div className="mt-4 space-y-3">
+          {drivers.map((driver) => (
+            <div
+              key={`${title}-${driver.label}-${driver.variance}`}
+              className="rounded-xl bg-zinc-50 p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-zinc-900">
+                    {driver.label}
+                  </p>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Actual:{" "}
+                    {driver.actual === null
+                      ? "n/a"
+                      : formatCompactNumber(driver.actual)}{" "}
+                    · Budget:{" "}
+                    {driver.budget === null
+                      ? "n/a"
+                      : formatCompactNumber(driver.budget)}
+                  </p>
+                </div>
+
+                <span
+                  className={`inline-flex shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${getSeverityClass(
+                    driver.severity
+                  )}`}
+                >
+                  {driver.severity}
+                </span>
+              </div>
+
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <p
+                  className={`text-lg font-semibold ${getDirectionClass(
+                    driver.direction
+                  )}`}
+                >
+                  {formatSignedCompactNumber(driver.variance)}
+                </p>
+
+                <p className="text-xs text-zinc-500">
+                  {formatSignedPercent(driver.variancePct)} vs budget
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 text-sm leading-6 text-zinc-500">{emptyText}</p>
+      )}
+    </div>
+  );
+}
+
 export default function BudgetVsActual({ data }: Props) {
   const metrics = calculateBudgetVsActual(data);
+  const varianceDrivers = analyzeVarianceDrivers(
+    data as Record<string, unknown>[]
+  );
 
   const isFavorable = metrics.status === "favorable";
   const isUnfavorable = metrics.status === "unfavorable";
@@ -64,19 +163,29 @@ export default function BudgetVsActual({ data }: Props) {
           <h2 className="mt-1 text-2xl font-semibold text-zinc-900">
             Revenue Performance
           </h2>
+          <p className="mt-2 text-sm leading-6 text-zinc-500">
+            Actual performance compared with budget, enhanced with rule-based
+            variance driver analysis.
+          </p>
         </div>
 
-        <span
-          className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${
-            isFavorable
-              ? "bg-emerald-50 text-emerald-700"
-              : isUnfavorable
-                ? "bg-red-50 text-red-700"
-                : "bg-zinc-100 text-zinc-600"
-          }`}
-        >
-          {getStatusLabel(metrics.status)}
-        </span>
+        <div className="flex flex-wrap gap-2">
+          <span
+            className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${
+              isFavorable
+                ? "bg-emerald-50 text-emerald-700"
+                : isUnfavorable
+                  ? "bg-red-50 text-red-700"
+                  : "bg-zinc-100 text-zinc-600"
+            }`}
+          >
+            {getStatusLabel(metrics.status)}
+          </span>
+
+          <span className="inline-flex w-fit rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-600">
+            {varianceDrivers.confidenceLevel} Driver Confidence
+          </span>
+        </div>
       </div>
 
       {!metrics.hasBudgetData ? (
@@ -144,9 +253,7 @@ export default function BudgetVsActual({ data }: Props) {
                 {metrics.variance > 0 ? "+" : ""}
                 {formatPercent(metrics.variancePct)}
               </p>
-              <p className="mt-1 text-xs text-zinc-400">
-                vs Budget
-              </p>
+              <p className="mt-1 text-xs text-zinc-400">vs Budget</p>
             </div>
           </div>
 
@@ -196,6 +303,71 @@ export default function BudgetVsActual({ data }: Props) {
           </div>
         </>
       )}
+
+      <div className="mt-6 rounded-2xl bg-zinc-50 p-5">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-zinc-900">
+              Variance Driver Intelligence
+            </p>
+            <p className="mt-1 text-sm leading-6 text-zinc-500">
+              Identifies the largest favorable and unfavorable variance drivers
+              from the uploaded dataset.
+            </p>
+          </div>
+
+          {varianceDrivers.hasVarianceData && (
+            <p className="text-xs text-zinc-400">
+              Dimension: {varianceDrivers.dimensionField ?? "Row level"}
+            </p>
+          )}
+        </div>
+
+        {!varianceDrivers.hasVarianceData ? (
+          <div className="rounded-2xl bg-white p-4 ring-1 ring-zinc-200/70">
+            <p className="text-sm font-medium text-zinc-700">
+              Variance driver data is not available
+            </p>
+            <p className="mt-2 text-sm leading-6 text-zinc-500">
+              {varianceDrivers.managementAttention[0]}
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <VarianceDriverList
+                title="Top Favorable Drivers"
+                drivers={varianceDrivers.topFavorable}
+                emptyText="No favorable variance driver was detected."
+              />
+
+              <VarianceDriverList
+                title="Top Unfavorable Drivers"
+                drivers={varianceDrivers.topUnfavorable}
+                emptyText="No unfavorable variance driver was detected."
+              />
+            </div>
+
+            <div className="mt-4 rounded-2xl bg-white p-4 ring-1 ring-zinc-200/70">
+              <h3 className="text-sm font-semibold text-zinc-900">
+                Management Attention
+              </h3>
+
+              <ul className="mt-3 space-y-2">
+                {varianceDrivers.managementAttention.map((item, index) => (
+                  <li
+                    key={`management-attention-${index}`}
+                    className="text-sm leading-6 text-zinc-600"
+                  >
+                    <span className="mr-2 text-zinc-400">•</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
+      </div>
     </section>
   );
 }
