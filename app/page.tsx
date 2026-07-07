@@ -7,6 +7,7 @@ import BudgetVsActual from "@/components/BudgetVsActual";
 import BusinessUnitPerformance from "@/components/BusinessUnitPerformance";
 import RegionPerformance from "@/components/RegionPerformance";
 import GlActualsSummary from "@/components/GlActualsSummary";
+import AiGlReviewAgent from "@/components/AiGlReviewAgent";
 import SheetTypeBadge from "@/components/SheetTypeBadge";
 import PreviewTable from "@/components/PreviewTable";
 import TrendCharts from "@/components/TrendCharts";
@@ -234,22 +235,21 @@ export default function Home() {
 
             <KpiCards metrics={kpis} />
 
-            <BudgetVsActual data={sheetRows} />
-
             <TrendCharts chartData={trendChartData} />
+
+            <BudgetVsActual data={sheetRows} />
 
             <section className="mt-8 w-full text-left">
               <div className="mb-4">
-                <p className="text-sm font-medium text-zinc-500">
-                  Segment Performance
-                </p>
-                <h2 className="mt-1 text-2xl font-semibold text-zinc-900">
-                  Business Unit & Region Analysis
-                </h2>
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+               Segment Performance
+              </div>
+              <h2 className="mt-3 text-2xl font-semibold text-slate-900">
+               Business Unit & Region Analysis
+              </h2>
                 <p className="mt-2 text-sm leading-6 text-zinc-500">
-                  Drill down into performance across business units and
-                  operating regions to identify concentration, growth, and
-                  margin patterns.
+                深入分析各业务单元及运营区域的业绩表现，识别业务集中度、增长趋势及利润率变化。
                 </p>
               </div>
 
@@ -265,6 +265,8 @@ export default function Home() {
             <GlActualsSummary rows={sheetRows} />
 
             <AiFinanceNarrative rows={financeRows} sheetType={sheetType} />
+
+            <AiGlReviewAgent rows={sheetRows} />
           </>
         )}
 

@@ -252,9 +252,9 @@ function buildManagementAttention(
     const largest = topUnfavorable[0];
 
     attention.push(
-      `${largest.label} is the largest unfavorable driver, with a variance of approximately ${formatNumber(
+      `${largest.label} 是当前最大的负向差异来源，实际表现较预算减少约 ${formatNumber(
         largest.variance
-      )} (${formatPct(largest.variancePct)} vs budget).`
+      )}（较预算 ${formatPct(largest.variancePct)}）。`
     );
 
     const highSeverityItems = topUnfavorable.filter(
@@ -263,14 +263,12 @@ function buildManagementAttention(
 
     if (highSeverityItems.length > 0) {
       attention.push(
-        `${highSeverityItems.length} high-severity unfavorable variance item${
-          highSeverityItems.length > 1 ? "s were" : " was"
-        } detected and should be reviewed with the relevant business owners.`
+        `检测到 ${highSeverityItems.length} 项高风险负向差异事项，建议与相关业务负责人进一步复核分析。`
       );
     }
   } else {
     attention.push(
-      "No major unfavorable variance was detected by the rule-based variance engine."
+      "基于规则驱动的差异分析未发现明显重大负向差异事项。"
     );
   }
 
@@ -278,21 +276,21 @@ function buildManagementAttention(
     const largestFavorable = topFavorable[0];
 
     attention.push(
-      `${largestFavorable.label} is the strongest favorable driver, contributing approximately ${formatNumber(
+      `${largestFavorable.label} 是表现最佳的正向差异来源，贡献约 ${formatNumber(
         largestFavorable.variance
-      )} (${formatPct(largestFavorable.variancePct)} vs budget).`
+      )}（较预算 ${formatPct(largestFavorable.variancePct)}）。`
     );
   }
 
   if (actualField && budgetField) {
     attention.push(
-      `Review ${actualField} against ${budgetField} and separate structural variance from timing, mix, or one-off impacts.`
+      `建议对实际数据与预算数据进行对比分析，并进一步区分结构性差异、时间因素、业务组合变化及一次性影响。`
     );
   }
 
   if (dimensionField) {
     attention.push(
-      `Variance drivers are grouped by ${dimensionField}, helping management identify which segment requires follow-up.`
+      `差异驱动因素已按 ${dimensionField} 分类汇总，帮助管理层识别需要重点关注和跟进的业务领域。`
     );
   }
 

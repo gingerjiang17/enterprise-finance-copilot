@@ -24,10 +24,6 @@ export default function PreviewTable({ rows }: PreviewTableProps) {
           <h2 className="mt-1 text-sm font-semibold text-zinc-900">
             Preview first {rows.length} rows
           </h2>
-          <p className="mt-1 text-xs text-zinc-500">
-            Collapsed by default to keep the dashboard focused on executive
-            insights.
-          </p>
         </div>
 
         <button

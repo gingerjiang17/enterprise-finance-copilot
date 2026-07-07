@@ -157,15 +157,15 @@ export default function BudgetVsActual({ data }: Props) {
     <section className="mt-8 w-full rounded-3xl bg-white p-6 text-left shadow-sm ring-1 ring-zinc-200/70">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-zinc-500">
-            Budget vs Actual
-          </p>
+        <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">
+        <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+          Budget vs Actual
+        </div>
           <h2 className="mt-1 text-2xl font-semibold text-zinc-900">
             Revenue Performance
           </h2>
           <p className="mt-2 text-sm leading-6 text-zinc-500">
-            Actual performance compared with budget, enhanced with rule-based
-            variance driver analysis.
+          实际业绩与预算对比分析，并结合规则驱动的差异原因识别，深入分析业绩偏差来源。
           </p>
         </div>
 
@@ -297,10 +297,6 @@ export default function BudgetVsActual({ data }: Props) {
             </div>
           </div>
 
-          <div className="mt-6 text-xs text-zinc-400">
-            Actual column: {metrics.actualColumn} · Budget column:{" "}
-            {metrics.budgetColumn}
-          </div>
         </>
       )}
 
@@ -311,8 +307,7 @@ export default function BudgetVsActual({ data }: Props) {
               Variance Driver Intelligence
             </p>
             <p className="mt-1 text-sm leading-6 text-zinc-500">
-              Identifies the largest favorable and unfavorable variance drivers
-              from the uploaded dataset.
+            基于上传的数据集，识别影响业绩的主要有利及不利差异因素。
             </p>
           </div>
 
@@ -338,13 +333,13 @@ export default function BudgetVsActual({ data }: Props) {
               <VarianceDriverList
                 title="Top Favorable Drivers"
                 drivers={varianceDrivers.topFavorable}
-                emptyText="No net favorable variance driver was detected after grouping by Business Unit."
+                emptyText="按业务单元汇总分析后，未发现明显的有利差异驱动因素。"
               />
 
               <VarianceDriverList
                 title="Top Unfavorable Drivers"
                 drivers={varianceDrivers.topUnfavorable}
-                emptyText="No unfavorable variance driver was detected after grouping by Business Unit."
+                emptyText="按业务单元汇总分析后，未发现明显的不利差异驱动因素。"
               />
             </div>
 

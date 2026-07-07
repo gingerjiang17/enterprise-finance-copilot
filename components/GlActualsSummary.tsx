@@ -42,12 +42,10 @@ export default function GlActualsSummary({ rows }: GlActualsSummaryProps) {
     return (
       <section className="mt-6 w-full max-w-6xl rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-left shadow-sm">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">
-            GL Actuals Summary
+        <h2 className="mt-4 text-2xl font-semibold tracking-tight text-zinc-900">           GL Actuals Summary
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Summarize actuals by P&L line and compare against budget, forecast,
-            and prior year.
+          <p className="mt-2 text-sm leading-6 text-zinc-500">
+          按 P&L 科目汇总实际发生额，并与预算、预测及上年同期数据进行对比分析。
           </p>
         </div>
 
@@ -69,13 +67,13 @@ export default function GlActualsSummary({ rows }: GlActualsSummaryProps) {
   return (
     <section className="mt-6 w-full max-w-6xl rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm">
       <div className="mb-4">
-        <h2 className="text-lg font-semibold text-slate-900">
-          GL Actuals Summary
-        </h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Summarize actuals by P&L line and compare against budget, forecast,
-          and prior year.
-        </p>
+      <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+  GL Actuals Summary
+</h2>
+
+<p className="mt-2 max-w-5xl text-sm leading-6 text-zinc-500">
+  按 P&L 科目汇总实际发生额，并与预算、预测及上年同期数据进行对比分析。
+</p>
       </div>
 
       <div className="overflow-x-auto">
@@ -128,27 +126,6 @@ export default function GlActualsSummary({ rows }: GlActualsSummaryProps) {
             ))}
           </tbody>
         </table>
-      </div>
-
-      <div className="mt-4 text-xs text-slate-500">
-        <span>Column mapping: </span>
-        <span>P&L Line = {result.columns.line}</span>
-        <span className="mx-2">·</span>
-        <span>Actual = {result.columns.actual}</span>
-        <span className="mx-2">·</span>
-        <span>Budget = {result.columns.budget}</span>
-        {result.columns.forecast && (
-          <>
-            <span className="mx-2">·</span>
-            <span>Forecast = {result.columns.forecast}</span>
-          </>
-        )}
-        {result.columns.priorYear && (
-          <>
-            <span className="mx-2">·</span>
-            <span>Prior Year = {result.columns.priorYear}</span>
-          </>
-        )}
       </div>
     </section>
   );

@@ -75,7 +75,7 @@ export default function RegionPerformance({ rows }: RegionPerformanceProps) {
           Region Performance
         </h2>
         <p className="text-sm text-slate-500">
-          Revenue contribution and profitability by region.
+          按区域分析收入贡献及盈利能力。
         </p>
       </div>
 
@@ -116,15 +116,6 @@ export default function RegionPerformance({ rows }: RegionPerformanceProps) {
             ))}
           </tbody>
         </table>
-      </div>
-
-      <div className="mt-4 text-xs text-slate-500">
-        <span>Column mapping: </span>
-        <span>Region = {result.columns.dimension}</span>
-        <span className="mx-2">·</span>
-        <span>Revenue = {result.columns.revenue}</span>
-        <span className="mx-2">·</span>
-        <span>Gross Profit = {result.columns.grossProfit}</span>
       </div>
     </section>
   );

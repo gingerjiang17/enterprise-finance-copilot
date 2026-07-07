@@ -292,11 +292,10 @@ export type FinanceNarrativeResult = {
     if (!rows.length) {
       return {
         executiveSummary:
-          "No financial records were available for analysis. Upload a valid finance dataset to generate AI-style commentary.",
-        keyFindings: [],
-        riskFlags: ["No source data was available for narrative generation."],
+        "当前没有可用于分析的财务数据，请上传有效财务文件以生成管理层分析。",        keyFindings: [],
+        riskFlags: ["当前没有可用于生成分析的数据来源。"],
         recommendedActions: [
-          "Upload a P&L, GL Actuals, Business Unit, or Region-level finance file.",
+          "请上传相关财务文件",
         ],
         confidenceLevel: "Low",
       };
@@ -337,21 +336,20 @@ export type FinanceNarrativeResult = {
     if (revenueSummary) {
       if (revenueSummary.total > 0) {
         keyFindings.push(
-          `Revenue-related data appears directionally positive, with total ${revenueField} of approximately ${formatNumber(
-            revenueSummary.total
-          )}.`
+      `收入相关指标整体呈积极趋势，${revenueField} 总额约为 ${formatNumber(
+        revenueSummary.total
+      )}。`
         );
       } else if (revenueSummary.total < 0) {
         riskFlags.push(
-          `Revenue-related data appears negative, with total ${revenueField} of approximately ${formatNumber(
-            revenueSummary.total
-          )}.`
+          `收入相关指标表现为负值，${revenueField} 总额约为 ${formatNumber(
+         revenueSummary.total
+          )}，建议进一步分析收入变化原因。`
         );
       }
   
       recommendedActions.push(
-        `Review the main drivers behind ${revenueField} performance and compare them against budget, forecast, or prior period results.`
-      );
+      `分析 ${revenueField} 变化的主要驱动因素，并与预算、预测及历史期间数据进行对比，进一步识别业绩偏差原因。`      );
     }
   
     const expenseSummaries = expenseFields
@@ -364,18 +362,21 @@ export type FinanceNarrativeResult = {
       )[0];
   
       keyFindings.push(
-        `Cost-related fields were detected. The largest expense-related field is ${largestExpense.field}, with an absolute total of approximately ${formatNumber(
+        `系统识别到成本及费用相关项目，其中金额最高的项目为 ${largestExpense.field}，金额约为 ${formatNumber(
           largestExpense.absoluteTotal
-        )}.`
+        )}。`
       );
+  
   
       riskFlags.push(
-        `${largestExpense.field} should be reviewed for potential cost control opportunities, especially if the increase is not linked to revenue growth.`
+        `${largestExpense.field} 需要进一步关注成本控制情况，尤其是在费用增长未伴随收入增长的情况下。`
       );
   
+  
       recommendedActions.push(
-        "Perform a variance review on major expense categories and separate one-off items from recurring operating costs."
+        "对主要费用类别进行差异分析，并区分一次性项目与持续性经营成本。"
       );
+  
     }
   
     const profitSummary = profitField
@@ -385,19 +386,19 @@ export type FinanceNarrativeResult = {
     if (profitSummary) {
       if (profitSummary.total > 0) {
         keyFindings.push(
-          `Profitability indicators appear positive based on ${profitField}, with a total of approximately ${formatNumber(
-            profitSummary.total
-          )}.`
+          `根据 ${profitField} 指标判断，整体盈利能力表现良好，金额约为 ${formatNumber(
+           profitSummary.total
+          )}。`
         );
       } else if (profitSummary.total < 0) {
         riskFlags.push(
-          `Profitability may be under pressure based on ${profitField}, with a total of approximately ${formatNumber(
+          `根据 ${profitField} 指标判断，盈利能力可能承受压力，金额约为 ${formatNumber(
             profitSummary.total
           )}.`
         );
   
         recommendedActions.push(
-          "Investigate whether the profitability pressure is driven by lower revenue, higher cost of sales, or operating expense growth."
+          "分析盈利能力变化原因，判断是否由收入下降、销售成本增加或经营费用增长导致。"
         );
       }
     }
@@ -410,19 +411,19 @@ export type FinanceNarrativeResult = {
       const comparableMargin = getComparableMarginValue(marginSummary.average);
   
       keyFindings.push(
-        `Margin-related data was detected in ${marginField}, with an average value of approximately ${formatMarginValue(
+       `系统识别到 ${marginField} 指标，平均水平约为 ${formatMarginValue(
           marginSummary.average
         )}.`
       );
   
       if (comparableMargin < 20) {
         riskFlags.push(
-          `${marginField} appears relatively low and may require management attention.`
+          `${marginField} 水平相对较低，建议管理层进一步关注利润率变化。`
         );
       }
   
       recommendedActions.push(
-        "Bridge margin movement by separating price, volume, mix, and cost effects where data is available."
+        "结合价格、销量、产品结构以及成本变化因素，进一步分析利润率变动原因。"
       );
     }
   
@@ -431,18 +432,18 @@ export type FinanceNarrativeResult = {
   
       if (topGroups.length > 0) {
         keyFindings.push(
-          `The dataset includes ${dimensionField}-level detail. The largest contributors by ${amountField} are ${topGroups
-            .map((group) => `${group.name} (${formatNumber(group.amount)})`)
-            .join(", ")}.`
+          `从 ${dimensionField} 维度看，${topGroups
+    .map((group) => `${group.name}（${formatNumber(group.amount)}）`)
+    .join("、")} 是当前金额影响较大的主体。`
         );
   
         recommendedActions.push(
-          `Use ${dimensionField}-level drilldown to identify whether performance is concentrated in a small number of business areas.`
+          `建议进一步拆分 ${dimensionField} 维度数据，确认金额波动是否集中在少数主体或业务区域。`
         );
       }
     } else if (dimensionField) {
       keyFindings.push(
-        `A management dimension was detected: ${dimensionField}. This supports further analysis by business area, region, department, or entity.`
+        `当前数据已包含 ${dimensionField} 维度，可用于后续按主体、区域或业务单元进行拆分分析。`
       );
     }
   
@@ -453,39 +454,39 @@ export type FinanceNarrativeResult = {
   
       if (topAccounts.length > 0) {
         riskFlags.push(
-          `GL Actuals review: the largest accounts by ${amountField} are ${topAccounts
-            .map((account) => `${account.name} (${formatNumber(account.amount)})`)
-            .join(", ")}. These accounts should be checked for unusual or one-off postings.`
-        );
+          `从 GL Actuals 看，金额影响较大的科目包括 ${topAccounts
+    .map((account) => `${account.name}（${formatNumber(account.amount)}）`)
+    .join("、")}，建议重点关注是否存在一次性入账、重分类或异常分录。`
+);
   
         recommendedActions.push(
-          "Review high-value GL accounts for accruals, reclassifications, manual journal entries, and unusual month-end postings."
-        );
+         "建议重点检查高金额 GL 科目的预提、重分类、手工调整分录及月末集中入账情况。"
+);
       }
     }
   
     if (keyFindings.length === 0) {
       keyFindings.push(
-        "The uploaded dataset was parsed successfully, but only limited finance-specific fields were detected."
+        "数据文件已成功解析，但当前识别到的财务字段有限，建议补充更多财务维度以提升分析深度。"
       );
     }
   
     if (riskFlags.length === 0) {
       riskFlags.push(
-        "No major risk flag was detected by the rule-based narrative engine. This does not replace detailed variance analysis."
+        "基于当前规则分析未发现明显风险事项，但结果不能替代详细的财务差异分析。"
       );
     }
   
     if (recommendedActions.length === 0) {
       recommendedActions.push(
-        "Add budget, forecast, prior period, business unit, region, or account-level fields to improve analysis depth."
+        "建议增加预算、预测、历史期间、业务单元、区域或科目级数据，以提升分析深度。"
       );
     }
   
     const executiveSummary =
       confidenceLevel === "Low"
-        ? "The dataset supports only limited preview-level analysis. More structured finance fields are needed to generate a stronger management narrative."
-        : `The uploaded finance dataset was analyzed using a rule-based AI narrative engine. The analysis detected ${matchedFieldCount} finance-relevant field signals across ${rows.length} records and generated management-level commentary on performance, risks, and recommended follow-up actions.`;
+        ? "当前数据仅支持基础分析，建议补充更完整的财务字段，以生成更深入的管理层分析。"
+        : `系统基于规则化 AI 分析引擎对上传财务数据进行分析，共识别 ${matchedFieldCount} 项财务相关指标，并分析 ${rows.length} 条记录，生成关于经营表现、潜在风险以及后续行动建议的管理层洞察。`;
   
     return {
       executiveSummary,
