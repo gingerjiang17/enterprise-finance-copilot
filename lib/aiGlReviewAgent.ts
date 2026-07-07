@@ -457,56 +457,28 @@ export type GlReviewFinding = {
   
   
   
-      if(issues.length > 0){
-  
-  
-        findingMap.set(
-          accountKey,
-          {
-  
-            finding:
-            `${accountLabel} 存在异常情况：${issues.join("；")}`,
-  
-  
-  
-            risk:
-  
-            severity === "Critical"
-  
-            ?
-  
-            "存在潜在会计分类错误风险，需要检查科目映射。"
-  
-            :
-  
-            "存在异常费用波动，需要进一步审核业务原因。",
-  
-  
-  
-  
-            recommendedAction:
-  
-            severity === "Critical"
-  
-            ?
-  
-            "检查 GL 科目映射关系以及财务报表分类规则。"
-  
-            :
-  
-            "检查支持性文件、审批记录以及业务发生原因。",
-  
-  
-  
-  
-            severity
-  
-          }
+      if (issues.length > 0) {
+        const isClassificationRisk = issues.includes(
+          "费用类科目被归入收入报表分类"
         );
-  
-  
+      
+        const finalSeverity: "Critical" | "High" | "Medium" | "Low" =
+          isClassificationRisk ? "Critical" : severity;
+      
+        findingMap.set(accountKey, {
+          finding: `${accountLabel} 存在异常情况：${issues.join("；")}`,
+      
+          risk: isClassificationRisk
+            ? "存在潜在会计分类错误风险，需要检查科目映射。"
+            : "存在异常费用波动，需要进一步审核业务原因。",
+      
+          recommendedAction: isClassificationRisk
+            ? "检查 GL 科目映射关系以及财务报表分类规则。"
+            : "检查支持性文件、审批记录以及业务发生原因。",
+      
+          severity: finalSeverity,
+        });
       }
-  
   
     });
   
