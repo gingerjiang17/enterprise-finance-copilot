@@ -1,3 +1,7 @@
+import { calculateFinanceMetrics } from "./financeMetrics";
+import type { Row } from "./excel";
+import { VarianceDriverResult } from "./varianceDrivers";
+
 export type FinanceNarrativeResult = {
     executiveSummary: string;
     keyFindings: string[];
@@ -287,7 +291,8 @@ export type FinanceNarrativeResult = {
   
   export function generateAiFinanceNarrative(
     rows: Record<string, unknown>[],
-    sheetType?: string
+    sheetType?: string,
+    varianceDrivers?:VarianceDriverResult
   ): FinanceNarrativeResult {
     if (!rows.length) {
       return {
@@ -300,7 +305,8 @@ export type FinanceNarrativeResult = {
         confidenceLevel: "Low",
       };
     }
-  
+    
+    const financeMetrics = calculateFinanceMetrics(rows as Row[]);
     const revenueField = findFirstColumn(rows, REVENUE_PATTERNS);
     const expenseFields = findColumns(rows, EXPENSE_PATTERNS);
     const profitField = findFirstColumn(rows, PROFIT_PATTERNS);
@@ -328,102 +334,64 @@ export type FinanceNarrativeResult = {
     const keyFindings: string[] = [];
     const riskFlags: string[] = [];
     const recommendedActions: string[] = [];
-  
-    const revenueSummary = revenueField
-      ? summarizeNumericField(rows, revenueField)
-      : null;
-  
-    if (revenueSummary) {
-      if (revenueSummary.total > 0) {
-        keyFindings.push(
-      `收入相关指标整体呈积极趋势，${revenueField} 总额约为 ${formatNumber(
-        revenueSummary.total
-      )}。`
-        );
-      } else if (revenueSummary.total < 0) {
-        riskFlags.push(
-          `收入相关指标表现为负值，${revenueField} 总额约为 ${formatNumber(
-         revenueSummary.total
-          )}，建议进一步分析收入变化原因。`
-        );
-      }
-  
-      recommendedActions.push(
-      `分析 ${revenueField} 变化的主要驱动因素，并与预算、预测及历史期间数据进行对比，进一步识别业绩偏差原因。`      );
-    }
-  
-    const expenseSummaries = expenseFields
-      .map((field) => summarizeNumericField(rows, field))
-      .filter((summary): summary is NumericSummary => summary !== null);
-  
-    if (expenseSummaries.length > 0) {
-      const largestExpense = expenseSummaries.sort(
-        (a, b) => b.absoluteTotal - a.absoluteTotal
-      )[0];
-  
+    const coreMetricFindingParts: string[] = [];
+
+if (financeMetrics.revenue !== null) {
+  coreMetricFindingParts.push(
+    `收入约为 ${formatNumber(financeMetrics.revenue)}`
+  );
+}
+
+if (financeMetrics.grossProfit !== null) {
+  coreMetricFindingParts.push(
+    `毛利润约为 ${formatNumber(financeMetrics.grossProfit)}`
+  );
+}
+
+if (financeMetrics.grossMargin !== null) {
+  coreMetricFindingParts.push(
+    `毛利率约为 ${formatMarginValue(financeMetrics.grossMargin)}`
+  );
+}
+
+if (financeMetrics.netProfit !== null) {
+  coreMetricFindingParts.push(
+    `净利润约为 ${formatNumber(financeMetrics.netProfit)}`
+  );
+}
+
+if (coreMetricFindingParts.length > 0) {
+  keyFindings.push(
+    `基于统一财务指标口径，本期${coreMetricFindingParts.join("，")}。`
+  );
+}
+
+    if (
+      varianceDrivers &&
+      varianceDrivers.topUnfavorable.length > 0
+    ) {
+      const topDriver = varianceDrivers.topUnfavorable[0];
+    
       keyFindings.push(
-        `系统识别到成本及费用相关项目，其中金额最高的项目为 ${largestExpense.field}，金额约为 ${formatNumber(
-          largestExpense.absoluteTotal
-        )}。`
+        topDriver.contributionPct !== null
+          ? `${topDriver.label} 是主要负向差异来源，占负向差异总额 ${topDriver.contributionPct.toFixed(
+              1
+            )}%，建议作为本期预算复盘的优先关注对象。`
+          : `${topDriver.label} 是主要负向差异来源，建议作为本期预算复盘的优先关注对象。`
       );
-  
-  
+    
       riskFlags.push(
-        `${largestExpense.field} 需要进一步关注成本控制情况，尤其是在费用增长未伴随收入增长的情况下。`
+        topDriver.contributionPct !== null
+          ? `${topDriver.label} 贡献了 ${topDriver.contributionPct.toFixed(
+              1
+            )}% 的负向差异，可能影响整体收入达成及预算执行表现。`
+          : `${topDriver.label} 是当前主要负向差异来源，可能影响整体预算执行表现。`
       );
-  
-  
+    
       recommendedActions.push(
-        "对主要费用类别进行差异分析，并区分一次性项目与持续性经营成本。"
-      );
-  
-    }
-  
-    const profitSummary = profitField
-      ? summarizeNumericField(rows, profitField)
-      : null;
-  
-    if (profitSummary) {
-      if (profitSummary.total > 0) {
-        keyFindings.push(
-          `根据 ${profitField} 指标判断，整体盈利能力表现良好，金额约为 ${formatNumber(
-           profitSummary.total
-          )}。`
-        );
-      } else if (profitSummary.total < 0) {
-        riskFlags.push(
-          `根据 ${profitField} 指标判断，盈利能力可能承受压力，金额约为 ${formatNumber(
-            profitSummary.total
-          )}.`
-        );
-  
-        recommendedActions.push(
-          "分析盈利能力变化原因，判断是否由收入下降、销售成本增加或经营费用增长导致。"
-        );
-      }
-    }
-  
-    const marginSummary = marginField
-      ? summarizeNumericField(rows, marginField)
-      : null;
-  
-    if (marginSummary) {
-      const comparableMargin = getComparableMarginValue(marginSummary.average);
-  
-      keyFindings.push(
-       `系统识别到 ${marginField} 指标，平均水平约为 ${formatMarginValue(
-          marginSummary.average
-        )}.`
-      );
-  
-      if (comparableMargin < 20) {
-        riskFlags.push(
-          `${marginField} 水平相对较低，建议管理层进一步关注利润率变化。`
-        );
-      }
-  
-      recommendedActions.push(
-        "结合价格、销量、产品结构以及成本变化因素，进一步分析利润率变动原因。"
+        topDriver.managementFocus
+          ? `优先复核 ${topDriver.label}：${topDriver.managementFocus}`
+          : `优先复核 ${topDriver.label} 的收入达成路径、订单量、客户转化及价格执行情况。`
       );
     }
   
@@ -483,11 +451,52 @@ export type FinanceNarrativeResult = {
       );
     }
   
+    const metricsSummaryParts: string[] = [];
+
+if (financeMetrics.revenue !== null) {
+  metricsSummaryParts.push(
+    `收入约为 ${formatNumber(financeMetrics.revenue)}`
+  );
+}
+
+if (financeMetrics.grossMargin !== null) {
+  metricsSummaryParts.push(
+    `毛利率约为 ${formatMarginValue(financeMetrics.grossMargin)}`
+  );
+}
+
+if (financeMetrics.netProfit !== null) {
+  metricsSummaryParts.push(
+    `净利润约为 ${formatNumber(financeMetrics.netProfit)}`
+  );
+}
+
+const metricsSummary =
+  metricsSummaryParts.length > 0
+    ? `基于统一财务指标口径，本期${metricsSummaryParts.join("，")}。`
+    : "";
+
+    let driverSummary = "";
+
+    if (
+      varianceDrivers &&
+      varianceDrivers.topUnfavorable.length > 0
+    ) {
+      const topDriver = varianceDrivers.topUnfavorable[0];
+    
+      driverSummary =
+        topDriver.contributionPct !== null
+          ? `其中 ${topDriver.label} 是主要负向差异来源，占负向差异总额 ${topDriver.contributionPct.toFixed(
+              1
+            )}%。`
+          : `其中 ${topDriver.label} 是主要负向差异来源，建议优先复核该业务单元的预算执行情况。`;
+    }
+
     const executiveSummary =
-      confidenceLevel === "Low"
-        ? "当前数据仅支持基础分析，建议补充更完整的财务字段，以生成更深入的管理层分析。"
-        : `系统基于规则化 AI 分析引擎对上传财务数据进行分析，共识别 ${matchedFieldCount} 项财务相关指标，并分析 ${rows.length} 条记录，生成关于经营表现、潜在风险以及后续行动建议的管理层洞察。`;
-  
+    confidenceLevel === "Low"
+      ? "当前数据仅支持基础分析，建议补充更完整的财务字段，以生成更深入的管理层分析。"
+      : `${metricsSummary}${driverSummary}系统进一步识别关键经营表现、潜在风险及后续行动建议，形成管理层视角分析。`;
+    
     return {
       executiveSummary,
       keyFindings,

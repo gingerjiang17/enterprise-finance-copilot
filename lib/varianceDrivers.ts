@@ -527,8 +527,7 @@ export function analyzeVarianceDrivers(
     };
   }
 
-  const rowLevelDrivers: VarianceDriver[] = rows
-    .map((row, index) => {
+  const rowLevelDrivers: VarianceDriver[] = rows.flatMap((row, index) => {
       const actual = actualField ? toNumber(row[actualField]) : null;
       const budget = budgetField ? toNumber(row[budgetField]) : null;
 
@@ -541,7 +540,7 @@ export function analyzeVarianceDrivers(
         (actual !== null && budget !== null ? actual - budget : null);
 
       if (variance === null || variance === 0) {
-        return null;
+        return [];
       }
 
       const variancePct =
@@ -558,21 +557,22 @@ export function analyzeVarianceDrivers(
         variancePct
       );
 
-      return {
-        label: buildLabel(row, dimensionField, index),
-        actual,
-        budget,
-        variance,
-        variancePct,
-        direction,
-        severity,
-        varianceType,
-        contributionPct: null,
-        detectionLogic: [],
-        managementFocus: buildManagementFocus(varianceType),
-      };
-    })
-    .filter((driver): driver is VarianceDriver => driver !== null);
+      return [
+        {
+          label: buildLabel(row, dimensionField, index),
+          actual,
+          budget,
+          variance,
+          variancePct,
+          direction,
+          severity,
+          varianceType,
+          contributionPct: null,
+          detectionLogic: [],
+          managementFocus: buildManagementFocus(varianceType),
+        },
+      ];
+  });
 
   const drivers = dimensionField
     ? aggregateDriversByLabel(rowLevelDrivers)

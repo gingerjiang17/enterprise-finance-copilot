@@ -17,6 +17,7 @@ import { buildTrendChartData } from "@/lib/charts";
 import { getSheetRows, type Row } from "@/lib/excel";
 import { calculateKpis } from "@/lib/kpi";
 import { detectSheetType } from "@/lib/sheetType";
+import { analyzeVarianceDrivers } from "@/lib/varianceDrivers";
 
 export default function Home() {
   const workbookRef = useRef<XLSX.WorkBook | null>(null);
@@ -105,12 +106,17 @@ export default function Home() {
       setIsLoadingSample(false);
     }
   }
-
+  
   const previewRows = sheetRows.slice(0, 10);
   const kpis = calculateKpis(sheetRows);
   const trendChartData = buildTrendChartData(sheetRows);
   const sheetType = detectSheetType(sheetRows);
   const financeRows = sheetRows as Record<string, unknown>[];
+
+  const varianceDrivers =
+   sheetType === "pl"
+     ? analyzeVarianceDrivers(financeRows)
+     : undefined;
 
   return (
     <div className="flex min-h-full flex-1 flex-col items-center bg-[#f5f5f7] px-6 py-16 font-sans">
@@ -232,7 +238,11 @@ export default function Home() {
 
         {selectedSheet && sheetType === "pl" && (
           <>
-            <AiFinanceNarrative rows={financeRows} sheetType={sheetType} />
+            <AiFinanceNarrative
+               rows={financeRows}
+               sheetType={sheetType}
+               varianceDrivers={varianceDrivers}
+            />
 
             <KpiCards metrics={kpis} />
 

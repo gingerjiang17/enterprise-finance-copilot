@@ -1,5 +1,7 @@
 "use client";
 
+import type { VarianceDriverResult } from "@/lib/varianceDrivers";
+
 import {
   generateAiFinanceNarrative,
 } from "@/lib/aiFinanceNarrative";
@@ -8,6 +10,7 @@ import {
 type Props = {
   rows: Record<string, unknown>[];
   sheetType?: string;
+  varianceDrivers?: VarianceDriverResult;
 };
 
 
@@ -96,13 +99,15 @@ function InsightList({
 export default function AiFinanceNarrative({
   rows,
   sheetType,
+  varianceDrivers,
 }: Props) {
 
 
   const narrative =
     generateAiFinanceNarrative(
       rows,
-      sheetType
+      sheetType,
+      varianceDrivers
     );
 
 
