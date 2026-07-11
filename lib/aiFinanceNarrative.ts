@@ -410,9 +410,6 @@ if (coreMetricFindingParts.length > 0) {
         );
       }
     } else if (dimensionField) {
-      keyFindings.push(
-        `当前数据已包含 ${dimensionField} 维度，可用于后续按主体、区域或业务单元进行拆分分析。`
-      );
     }
   
     const glActualsDetected = isGlActualsSheet(rows, sheetType);
