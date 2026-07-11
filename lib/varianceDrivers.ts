@@ -2,6 +2,13 @@ export type VarianceDirection = "Favorable" | "Unfavorable" | "Neutral";
 
 export type VarianceSeverity = "High" | "Medium" | "Low";
 
+export type VarianceType =
+  | "Revenue Shortfall"
+  | "Revenue Outperformance"
+  | "Expense Overrun"
+  | "Expense Saving"
+  | "Minor Variance";
+
 export type VarianceDriver = {
   label: string;
   actual: number | null;
@@ -10,6 +17,10 @@ export type VarianceDriver = {
   variancePct: number | null;
   direction: VarianceDirection;
   severity: VarianceSeverity;
+  varianceType: VarianceType;
+  contributionPct: number | null;
+  detectionLogic: string[];
+  managementFocus: string;
 };
 
 export type VarianceDriverResult = {
@@ -223,6 +234,96 @@ function getSeverity(
   return "Low";
 }
 
+function getVarianceType(
+  direction: VarianceDirection,
+  isCostRow: boolean,
+  variancePct: number | null
+): VarianceType {
+  const absPct = variancePct === null ? 0 : Math.abs(variancePct);
+
+  if (absPct < 1) {
+    return "Minor Variance";
+  }
+
+  if (isCostRow) {
+    return direction === "Unfavorable"
+      ? "Expense Overrun"
+      : "Expense Saving";
+  }
+
+  return direction === "Unfavorable"
+    ? "Revenue Shortfall"
+    : "Revenue Outperformance";
+}
+
+function buildDetectionLogic(
+  varianceType: VarianceType,
+  variancePct: number | null,
+  contributionPct: number | null
+): string[] {
+  const logic: string[] = [];
+
+  if (
+    varianceType === "Revenue Shortfall" ||
+    varianceType === "Revenue Outperformance"
+  ) {
+    logic.push(
+      varianceType === "Revenue Shortfall"
+        ? "Actual Revenue 低于 Budget Revenue，触发收入预算差异检查。"
+        : "Actual Revenue 高于 Budget Revenue，触发收入正向差异检查。"
+    );
+  }
+
+  if (
+    varianceType === "Expense Overrun" ||
+    varianceType === "Expense Saving"
+  ) {
+    logic.push(
+      varianceType === "Expense Overrun"
+        ? "Actual Expense 高于 Budget Expense，触发费用超预算检查。"
+        : "Actual Expense 低于 Budget Expense，触发费用节约检查。"
+    );
+  }
+
+  if (varianceType === "Minor Variance") {
+    logic.push("Variance rate 未达到重大差异阈值，暂归类为轻微差异。");
+  }
+
+  if (variancePct !== null) {
+    logic.push(
+      `Variance rate 为 ${formatPct(variancePct)}，用于判断差异严重程度。`
+    );
+  }
+
+  if (contributionPct !== null) {
+    logic.push(
+      `该 driver 贡献了 ${formatPct(contributionPct)} 的同方向总差异。`
+    );
+  }
+
+  return logic;
+}
+
+function buildManagementFocus(varianceType: VarianceType): string {
+  if (varianceType === "Revenue Shortfall") {
+    return "重点复核订单量、客户转化及价格执行情况。";
+  }
+
+  if (varianceType === "Revenue Outperformance") {
+    return "总结超预算收入来源，评估增长是否具备持续性。";
+  }
+
+  if (varianceType === "Expense Overrun") {
+    return "重点复核费用审批、预算控制及一次性费用项目。";
+  }
+
+  if (varianceType === "Expense Saving") {
+    return "确认费用节约是否来自效率提升，或存在项目延期、费用跨期等因素。";
+  }
+
+  return "持续跟踪该项目，当前差异未达到重大复核阈值。";
+}
+
 function buildLabel(
   row: Record<string, unknown>,
   dimensionField: string | undefined,
@@ -251,11 +352,27 @@ function buildManagementAttention(
   if (topUnfavorable.length > 0) {
     const largest = topUnfavorable[0];
 
+    const driverLabels = topUnfavorable
+      .map((driver) => driver.label)
+      .join("、");
+
     attention.push(
-      `${largest.label} 是当前最大的负向差异来源，实际表现较预算减少约 ${formatNumber(
-        largest.variance
-      )}（较预算 ${formatPct(largest.variancePct)}）。`
+      `本期收入低于预算，负向差异主要集中在 ${driverLabels} 等业务单元。`
     );
+
+    if (largest.contributionPct !== null) {
+      attention.push(
+        `${largest.label} 是最大差异来源，占负向差异总额的 ${formatPct(
+          largest.contributionPct
+        )}，建议优先复核收入达成路径。`
+      );
+    } else {
+      attention.push(
+        `${largest.label} 是当前最大的负向差异来源，实际表现较预算减少约 ${formatNumber(
+          largest.variance
+        )}（较预算 ${formatPct(largest.variancePct)}）。`
+      );
+    }
 
     const highSeverityItems = topUnfavorable.filter(
       (driver) => driver.severity === "High"
@@ -263,12 +380,12 @@ function buildManagementAttention(
 
     if (highSeverityItems.length > 0) {
       attention.push(
-        `检测到 ${highSeverityItems.length} 项高风险负向差异事项，建议与相关业务负责人进一步复核分析。`
+        `当前检测到 ${highSeverityItems.length} 项高风险差异事项，建议进一步结合订单量、价格执行、客户转化及一次性影响进行分析。`
       );
     }
   } else {
     attention.push(
-      "基于规则驱动的差异分析未发现明显重大负向差异事项。"
+      "基于规则驱动的差异分析，当前未发现明显重大负向差异事项。"
     );
   }
 
@@ -276,21 +393,13 @@ function buildManagementAttention(
     const largestFavorable = topFavorable[0];
 
     attention.push(
-      `${largestFavorable.label} 是表现最佳的正向差异来源，贡献约 ${formatNumber(
-        largestFavorable.variance
-      )}（较预算 ${formatPct(largestFavorable.variancePct)}）。`
+      `${largestFavorable.label} 是主要正向差异来源，建议评估该增长是否具备持续性。`
     );
   }
 
-  if (actualField && budgetField) {
+  if (actualField && budgetField && dimensionField) {
     attention.push(
-      `建议对实际数据与预算数据进行对比分析，并进一步区分结构性差异、时间因素、业务组合变化及一次性影响。`
-    );
-  }
-
-  if (dimensionField) {
-    attention.push(
-      `差异驱动因素已按 ${dimensionField} 分类汇总，帮助管理层识别需要重点关注和跟进的业务领域。`
+      `差异驱动因素已按 ${dimensionField} 汇总，便于管理层快速定位重点复核对象。`
     );
   }
 
@@ -322,7 +431,9 @@ function aggregateDriversByLabel(drivers: VarianceDriver[]): VarianceDriver[] {
         variance: driver.variance,
         hasActual: driver.actual !== null,
         hasBudget: driver.budget !== null,
-        isCostDriver: driver.direction === "Unfavorable" && driver.variance > 0,
+        isCostDriver:
+          driver.varianceType === "Expense Overrun" ||
+          driver.varianceType === "Expense Saving",
       });
 
       return;
@@ -333,12 +444,20 @@ function aggregateDriversByLabel(drivers: VarianceDriver[]): VarianceDriver[] {
     existing.variance += driver.variance;
     existing.hasActual = existing.hasActual || driver.actual !== null;
     existing.hasBudget = existing.hasBudget || driver.budget !== null;
+
+    if (
+      driver.varianceType === "Expense Overrun" ||
+      driver.varianceType === "Expense Saving"
+    ) {
+      existing.isCostDriver = true;
+    }
   });
 
   return Array.from(groupedDrivers.values())
     .map((group) => {
       const actual = group.hasActual ? group.actual : null;
       const budget = group.hasBudget ? group.budget : null;
+
       const variancePct =
         budget !== null && budget !== 0
           ? (group.variance / Math.abs(budget)) * 100
@@ -346,6 +465,11 @@ function aggregateDriversByLabel(drivers: VarianceDriver[]): VarianceDriver[] {
 
       const direction = getDirection(group.variance, group.isCostDriver);
       const severity = getSeverity(variancePct, group.variance);
+      const varianceType = getVarianceType(
+        direction,
+        group.isCostDriver,
+        variancePct
+      );
 
       return {
         label: group.label,
@@ -355,6 +479,10 @@ function aggregateDriversByLabel(drivers: VarianceDriver[]): VarianceDriver[] {
         variancePct,
         direction,
         severity,
+        varianceType,
+        contributionPct: null,
+        detectionLogic: [],
+        managementFocus: buildManagementFocus(varianceType),
       };
     })
     .filter((driver) => driver.direction !== "Neutral");
@@ -403,6 +531,7 @@ export function analyzeVarianceDrivers(
     .map((row, index) => {
       const actual = actualField ? toNumber(row[actualField]) : null;
       const budget = budgetField ? toNumber(row[budgetField]) : null;
+
       const explicitVariance = varianceField
         ? toNumber(row[varianceField])
         : null;
@@ -423,6 +552,11 @@ export function analyzeVarianceDrivers(
       const isCostRow = inferIsCostRow(row);
       const direction = getDirection(variance, isCostRow);
       const severity = getSeverity(variancePct, variance);
+      const varianceType = getVarianceType(
+        direction,
+        isCostRow,
+        variancePct
+      );
 
       return {
         label: buildLabel(row, dimensionField, index),
@@ -432,6 +566,10 @@ export function analyzeVarianceDrivers(
         variancePct,
         direction,
         severity,
+        varianceType,
+        contributionPct: null,
+        detectionLogic: [],
+        managementFocus: buildManagementFocus(varianceType),
       };
     })
     .filter((driver): driver is VarianceDriver => driver !== null);
@@ -440,25 +578,56 @@ export function analyzeVarianceDrivers(
     ? aggregateDriversByLabel(rowLevelDrivers)
     : rowLevelDrivers;
 
-  const topFavorable = drivers
+  const favorableTotal = drivers
+    .filter((driver) => driver.direction === "Favorable")
+    .reduce((sum, driver) => sum + Math.abs(driver.variance), 0);
+
+  const unfavorableTotal = drivers
+    .filter((driver) => driver.direction === "Unfavorable")
+    .reduce((sum, driver) => sum + Math.abs(driver.variance), 0);
+
+  const enrichedDrivers = drivers.map((driver) => {
+    const total =
+      driver.direction === "Favorable"
+        ? favorableTotal
+        : driver.direction === "Unfavorable"
+          ? unfavorableTotal
+          : 0;
+
+    const contributionPct =
+      total > 0 ? (Math.abs(driver.variance) / total) * 100 : null;
+
+    return {
+      ...driver,
+      contributionPct,
+      detectionLogic: buildDetectionLogic(
+        driver.varianceType,
+        driver.variancePct,
+        contributionPct
+      ),
+      managementFocus: buildManagementFocus(driver.varianceType),
+    };
+  });
+
+  const topFavorable = enrichedDrivers
     .filter((driver) => driver.direction === "Favorable")
     .sort((a, b) => Math.abs(b.variance) - Math.abs(a.variance))
     .slice(0, 3);
 
-  const topUnfavorable = drivers
+  const topUnfavorable = enrichedDrivers
     .filter((driver) => driver.direction === "Unfavorable")
     .sort((a, b) => Math.abs(b.variance) - Math.abs(a.variance))
     .slice(0, 3);
 
   const confidenceLevel =
-    hasActualBudget && drivers.length >= 5
+    hasActualBudget && enrichedDrivers.length >= 5
       ? "High"
-      : hasActualBudget || drivers.length >= 3
+      : hasActualBudget || enrichedDrivers.length >= 3
         ? "Medium"
         : "Low";
 
   return {
-    hasVarianceData: drivers.length > 0,
+    hasVarianceData: enrichedDrivers.length > 0,
     actualField,
     budgetField,
     varianceField,

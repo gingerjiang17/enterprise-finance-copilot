@@ -59,6 +59,14 @@ function getDirectionClass(direction: VarianceDriver["direction"]) {
   return "text-zinc-600";
 }
 
+function getVarianceTypeText(type: VarianceDriver["varianceType"]) {
+  if (type === "Revenue Shortfall") return "收入未达预算";
+  if (type === "Revenue Outperformance") return "收入超出预算";
+  if (type === "Expense Overrun") return "费用超出预算";
+  if (type === "Expense Saving") return "费用节约";
+  return "轻微差异";
+}
+
 function VarianceDriverList({
   title,
   drivers,
@@ -73,7 +81,7 @@ function VarianceDriverList({
       <h3 className="text-sm font-semibold text-zinc-900">{title}</h3>
 
       {drivers.length > 0 ? (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 grid gap-3 lg:grid-cols-3">
           {drivers.map((driver) => (
             <div
               key={`${title}-${driver.label}-${driver.variance}`}
@@ -106,18 +114,56 @@ function VarianceDriverList({
               </div>
 
               <div className="mt-3 flex items-end justify-between gap-3">
-                <p
-                  className={`text-lg font-semibold ${getDirectionClass(
-                    driver.direction
-                  )}`}
-                >
-                  {formatSignedCompactNumber(driver.variance)}
-                </p>
+  <p
+    className={`text-lg font-semibold ${getDirectionClass(
+      driver.direction
+    )}`}
+  >
+    {formatSignedCompactNumber(driver.variance)}
+  </p>
 
-                <p className="text-xs text-zinc-500">
-                  {formatSignedPercent(driver.variancePct)} vs budget
-                </p>
-              </div>
+  <p className="text-xs text-zinc-500">
+    {formatSignedPercent(driver.variancePct)} vs budget
+  </p>
+</div>
+
+<div className="mt-4 space-y-3 border-t border-zinc-200 pt-3">
+  <div>
+    <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+      Variance Type
+    </p>
+
+    <p className="mt-1 text-sm font-semibold text-zinc-900">
+  {getVarianceTypeText(driver.varianceType)}
+</p>
+  </div>
+
+  <div>
+    <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+      Contribution
+    </p>
+
+    <p className="mt-1 text-sm text-zinc-600">
+    {driver.contributionPct === null
+  ? "n/a"
+  : driver.direction === "Unfavorable"
+    ? `占负向差异总额的 ${driver.contributionPct.toFixed(1)}%`
+    : driver.direction === "Favorable"
+      ? `占正向差异总额的 ${driver.contributionPct.toFixed(1)}%`
+      : `贡献占比 ${driver.contributionPct.toFixed(1)}%`}
+    </p>
+  </div>
+
+  <div>
+    <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+      Management Focus
+    </p>
+
+    <p className="mt-1 text-sm leading-6 text-zinc-600">
+      {driver.managementFocus}
+    </p>
+  </div>
+</div>
             </div>
           ))}
         </div>
@@ -329,19 +375,19 @@ export default function BudgetVsActual({ data }: Props) {
           </div>
         ) : (
           <>
-            <div className="grid gap-4 lg:grid-cols-2">
-              <VarianceDriverList
-                title="Top Favorable Drivers"
-                drivers={varianceDrivers.topFavorable}
-                emptyText="按业务单元汇总分析后，未发现明显的有利差异驱动因素。"
-              />
+            <div className="space-y-4">
+  <VarianceDriverList
+    title="Top Unfavorable Drivers"
+    drivers={varianceDrivers.topUnfavorable}
+    emptyText="按业务单元汇总分析后，未发现明显的不利差异驱动因素。"
+  />
 
-              <VarianceDriverList
-                title="Top Unfavorable Drivers"
-                drivers={varianceDrivers.topUnfavorable}
-                emptyText="按业务单元汇总分析后，未发现明显的不利差异驱动因素。"
-              />
-            </div>
+  <VarianceDriverList
+    title="Top Favorable Drivers"
+    drivers={varianceDrivers.topFavorable}
+    emptyText="按业务单元汇总分析后，未发现明显的有利差异驱动因素。"
+  />
+</div>
 
             <div className="mt-4 rounded-2xl bg-white p-4 ring-1 ring-zinc-200/70">
               <h3 className="text-sm font-semibold text-zinc-900">

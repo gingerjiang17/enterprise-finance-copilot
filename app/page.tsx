@@ -8,6 +8,7 @@ import BusinessUnitPerformance from "@/components/BusinessUnitPerformance";
 import RegionPerformance from "@/components/RegionPerformance";
 import GlActualsSummary from "@/components/GlActualsSummary";
 import AiGlReviewAgent from "@/components/AiGlReviewAgent";
+import DataQualityReview from "@/components/DataQualityReview";
 import SheetTypeBadge from "@/components/SheetTypeBadge";
 import PreviewTable from "@/components/PreviewTable";
 import TrendCharts from "@/components/TrendCharts";
@@ -263,6 +264,8 @@ export default function Home() {
         {selectedSheet && sheetType === "gl" && (
           <>
             <GlActualsSummary rows={sheetRows} />
+
+            <DataQualityReview rows={financeRows} />
 
             <AiFinanceNarrative rows={financeRows} sheetType={sheetType} />
 

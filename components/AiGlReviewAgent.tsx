@@ -63,7 +63,7 @@ export default function AiGlReviewAgent({ rows }: Props) {
 
       {/* Findings */}
       {result.keyFindings.length > 0 ? (
-        <div className="mt-5 grid gap-5 lg:grid-cols-3">
+        <div className="mt-5 grid gap-5 lg:grid-cols-2">
           {result.keyFindings.map((item, index) => (
             <div
               key={index}
@@ -100,11 +100,66 @@ export default function AiGlReviewAgent({ rows }: Props) {
               </div>
 
               <div className="space-y-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Exception Type
+                  </p>
+
+                  <p className="mt-1 text-sm font-semibold text-zinc-900">
+                    {item.exceptionType}
+                  </p>
+                </div>
+                {item.relatedRuleChecks.length > 0 && (
+  <div>
+    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+      Related Rule Checks
+    </p>
+
+    <div className="mt-2 flex flex-wrap gap-2">
+      {item.relatedRuleChecks.map((rule, ruleIndex) => (
+        <span
+          key={ruleIndex}
+          className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600"
+        >
+          {rule}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
+
                 <p className="text-sm leading-6 text-zinc-600">
                   <span className="font-semibold text-zinc-900">
                     Finding:
                   </span>{" "}
                   {item.finding}
+                </p>
+
+                <div>
+                  <p className="text-sm font-semibold text-zinc-900">
+                    Detection Logic:
+                  </p>
+
+                  <ul className="mt-1 space-y-1 pl-4 text-sm leading-6 text-zinc-600">
+                    {item.detectionLogic.slice(0, 3).map((logic, logicIndex) => (
+                     <li key={logicIndex} className="list-disc">
+                       {logic}
+                     </li>
+                  ))}
+
+                  {item.detectionLogic.length > 3 && (
+                     <li className="list-disc text-slate-400">
+                      + {item.detectionLogic.length - 3} more rule checks triggered
+                     </li>
+                    )}
+                  </ul>
+                </div>
+
+                <p className="text-sm leading-6 text-zinc-600">
+                  <span className="font-semibold text-zinc-900">
+                    Business Impact:
+                  </span>{" "}
+                  {item.businessImpact}
                 </p>
 
                 <p className="text-sm leading-6 text-zinc-600">
