@@ -106,7 +106,7 @@ export default function Home() {
       setIsLoadingSample(false);
     }
   }
-  
+
   const previewRows = sheetRows.slice(0, 10);
   const kpis = calculateKpis(sheetRows);
   const trendChartData = buildTrendChartData(sheetRows);
@@ -130,8 +130,7 @@ export default function Home() {
         </p>
 
         <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-500 sm:text-base">
-        这是一个结合 AI 与财务数据分析的作品项目，展示如何将 Excel 数据快速转化为 KPI 汇总、预算差异分析、风险提示和管理层摘要，帮助提升财务分析、信息整理和管理汇报的效率。
-        </p>
+        面向企业财务分析场景的 AI Finance Copilot 作品项目，支持从 Excel 数据自动生成 KPI、预算差异、GL 审核、数据质量检查及管理层评论。        </p>
 
         <div className="mt-16 flex flex-col items-center gap-3 sm:flex-row">
           <label className="group cursor-pointer">
@@ -158,7 +157,7 @@ export default function Home() {
                   d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
                 />
               </svg>
-              上传Excel
+              上传 Excel
             </span>
           </label>
 
@@ -187,12 +186,52 @@ export default function Home() {
           </button>
         </div>
 
+        {!selectedSheet && (
+        <div className="mt-12 grid w-full max-w-5xl gap-4 text-left md:grid-cols-4">
+  <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200/70">
+    <p className="text-sm font-semibold text-zinc-900">
+      P&amp;L Analysis
+    </p>
+    <p className="mt-2 text-sm leading-6 text-zinc-500">
+      自动生成 KPI、趋势分析、预算差异及业务单元表现。
+    </p>
+  </div>
+
+  <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200/70">
+    <p className="text-sm font-semibold text-zinc-900">
+      Variance Intelligence
+    </p>
+    <p className="mt-2 text-sm leading-6 text-zinc-500">
+      识别主要有利及不利差异驱动因素，并生成管理层关注点。
+    </p>
+  </div>
+
+  <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200/70">
+    <p className="text-sm font-semibold text-zinc-900">
+      GL Review
+    </p>
+    <p className="mt-2 text-sm leading-6 text-zinc-500">
+      基于 GL Actuals 识别预算偏差、异常波动及潜在会计风险。
+    </p>
+  </div>
+
+  <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200/70">
+    <p className="text-sm font-semibold text-zinc-900">
+      Data Quality Review
+    </p>
+    <p className="mt-2 text-sm leading-6 text-zinc-500">
+      检查字段完整性、金额格式、成本中心及重复记录风险。
+    </p>
+  </div>
+</div>
+)}
+
         {fileName ? (
           <p className="mt-6 text-sm font-medium text-zinc-600">
             当前文件：{fileName}
           </p>
         ) : (
-          <p className="mt-6 text-sm text-zinc-400">.xlsx, .xls, 或.csv</p>
+          <p className="mt-6 text-sm text-zinc-400">支持 .xlsx, .xls 或.csv</p>
         )}
 
         {sheetNames.length > 0 && selectedSheet && (
